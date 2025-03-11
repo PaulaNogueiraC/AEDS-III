@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-//Problema: se fechar os scanners comeca a dar erro 
+//Problema: caracteres especiais voltando esquisitos para o CSV
 
 public class Main {
     private static final String ARQ = "imdb_movies.db";
@@ -15,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         inicializaUltimoId(); // Lê o último ID salvo
-        Scanner scanner = new Scanner(System.in);
+        try (Scanner scanner = new Scanner(System.in)) {
             int opcao;
             
             do {
@@ -32,7 +32,7 @@ public class Main {
                 
                 switch (opcao) {
                     case 1 -> carregarDoCSV();
-                    case 2 -> adicionarFilme();
+                    case 2 -> adicionarFilme(scanner);
                     case 3 -> {
                         System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
@@ -45,7 +45,7 @@ public class Main {
                         System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
-                        alterarFilme(id);
+                        alterarFilme(id, scanner);
                     }
                     case 5 -> {
                         System.out.print("\nID do filme: ");
@@ -60,6 +60,7 @@ public class Main {
                     default -> System.out.println("Opcao invalida!");
                 }
             } while (opcao != 6);
+        }
     }
 
     private static void inicializaUltimoId() throws IOException {
@@ -72,9 +73,8 @@ public class Main {
         }
     }
 
-    private static void adicionarFilme() throws IOException {
+    private static void adicionarFilme(Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
-            Scanner scanner = new Scanner(System.in);
 
             System.out.print("Nome: ");
             String name = scanner.nextLine();
@@ -202,7 +202,7 @@ public class Main {
         }
     }
 
-    private static void alterarFilme(int id) throws IOException {
+    private static void alterarFilme(int id, Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
             ultimoId = arq.readInt();
@@ -241,7 +241,7 @@ public class Main {
                 return;
             }
     
-                Scanner scanner = new Scanner(System.in); // Agora, vamos pedir as novas informações para o filme
+                // Agora, vamos pedir as novas informações para o filme
                 System.out.print("Nome (atual: " + filmeAntigo.getName() + "): ");
                 String name = scanner.nextLine();
    
