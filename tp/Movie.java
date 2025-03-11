@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat; 
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class Movie {
     private int id; // Inteiro
@@ -131,15 +132,14 @@ public class Movie {
     @Override
     public String toString() { // Transforma na String do CSV
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        return id + "," +
-               name + "," +
+        return name + "," +
                sdf.format(releaseDate) + "," +
-               String.format("%.1f", score) + "," +
+               String.format(Locale.US,"%.1f", score) + "," +
                listToString(genres) + "," +
-               overview + "," +
+               "\"" + overview + "\"" + "," +
                originalTitle + "," +
                listToString(originalLanguage) + "," +
-               String.format("%.1f", budget) + "," +
+               String.format(Locale.US,"%.1f", budget) + "," +
                country + "\n";
     }
 
@@ -153,10 +153,9 @@ public class Movie {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
         
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         dos.writeInt(id);
         dos.writeUTF(name);
-        dos.writeUTF(sdf.format(releaseDate));  // Armazenando a data como string
+        dos.writeLong(releaseDate.getTime()); // Armazenando a data como timestamp
         dos.writeFloat(score);
         dos.writeUTF(String.join(",", genres));  // Convertendo lista de gêneros para string
         dos.writeUTF(overview);
@@ -173,14 +172,9 @@ public class Movie {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
         
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         id = dis.readInt();
         name = dis.readUTF();
-        try {
-            releaseDate = sdf.parse(dis.readUTF()); // Convertendo a string de volta para Date
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        releaseDate = new Date(dis.readLong()); // Convertendo a string de volta para Date
         score = dis.readFloat();
         genres = List.of(dis.readUTF().split(","));  // Convertendo a string de volta para lista
         overview = dis.readUTF();
@@ -194,15 +188,5 @@ public class Movie {
     public String getFormattedReleaseDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         return sdf.format(releaseDate);
-    }
-
-    // Método para converter uma string no formato MM/dd/yyyy para Date
-    public void setReleaseDateFromString(String releaseDateString) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-            this.releaseDate = sdf.parse(releaseDateString); // Converte a string para Date
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

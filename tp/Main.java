@@ -4,9 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Scanner;
-
-//Problemas: se fechar os scanners comeca a dar erro e o ultimoId nao pode ser lendo do CSV, fazer calculando e os caracteres especiais de texto saem esquisito e numero em formato cientifico.
+//Problema: se fechar os scanners comeca a dar erro 
 
 public class Main {
     private static final String ARQ = "imdb_movies.db";
@@ -34,7 +34,7 @@ public class Main {
                     case 1 -> carregarDoCSV();
                     case 2 -> adicionarFilme();
                     case 3 -> {
-                        System.out.println("ID do filme: ");
+                        System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
                         Movie ler = lerFilme(id);
@@ -42,13 +42,13 @@ public class Main {
                         else System.out.println(ler.toString());
                     }
                     case 4 -> {
-                        System.out.print("ID do filme: ");
+                        System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
                         alterarFilme(id);
                     }
                     case 5 -> {
-                        System.out.print("ID do filme: ");
+                        System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
                         deletarFilme(id);
@@ -81,43 +81,39 @@ public class Main {
 
             System.out.print("Data de lancamento (MM/dd/yyyy): ");
             String releaseDateStr = scanner.nextLine();
-            Date releaseDate = new Date();
-            try {
-                releaseDate = new SimpleDateFormat("MM/dd/yyyy").parse(releaseDateStr);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            Date releaseDate = releaseDateFromString(releaseDateStr);
+                        
+            
             System.out.print("Nota: ");
             float score = scanner.nextFloat();
             scanner.nextLine();
-
+            
             System.out.print("Generos (separados por virgula): ");
             List<String> genres = Arrays.asList(scanner.nextLine().split(","));
-
+            
             System.out.print("Resumo: ");
             String overview = scanner.nextLine();
-
+            
             System.out.print("Titulo Original: ");
             String originalTitle = scanner.nextLine();
-
+            
             System.out.print("Idiomas Originais (separados por virgula): ");
             List<String> originalLanguage = Arrays.asList(scanner.nextLine().split(","));
-
+            
             System.out.print("Orcamento: ");
             float budget = scanner.nextFloat();
             scanner.nextLine();
-
+            
             System.out.print("Pais: ");
             String country = scanner.nextLine();
-
+            
             arq.seek(0);
             ultimoId = arq.readInt();
-
+            
             Movie filme = new Movie(++ultimoId, name, releaseDate, score, genres, overview, originalTitle, originalLanguage, budget, country);
             arq.seek(0);
             arq.writeInt(ultimoId); // Atualiza o último ID salvo
-
+            
             arq.seek(arq.length()); // Move o ponteiro para o final do arquivo
             arq.writeBoolean(false); // Lápide que marca como não deletado
             byte[] filmeData = filme.toByteArray();
@@ -125,6 +121,18 @@ public class Main {
             arq.write(filmeData);
             System.out.println("\nFilme adicionado com sucesso!");
         }
+    }
+            
+    // Método para converter uma string no formato MM/dd/yyyy para Date
+    public static Date releaseDateFromString(String releaseDateString) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            Date data = sdf.parse(releaseDateString); // Converte a string para Date
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static void carregarDoCSV() throws IOException {
@@ -136,7 +144,9 @@ public class Main {
                 if (filme != null) {
                     try(RandomAccessFile arqBin = new RandomAccessFile(ARQ, "rw")){
                         arqBin.seek(0);
-                        ultimoId = filme.getId();
+                        ultimoId = arqBin.readInt();
+                        filme.setId(++ultimoId); 
+                        arqBin.seek(0);
                         arqBin.writeInt(ultimoId);
                         arqBin.seek(arqBin.length()); // Move o ponteiro para o final do arquivo
                         arqBin.writeBoolean(false); // Lápide que marca como não deletado
@@ -150,24 +160,19 @@ public class Main {
     }
 
     private static Movie lerLinhaCSV(String linha) {
-        try {
-            String[] campos = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-            int id = Integer.parseInt(campos[0]);
-            String name = campos[1];
-            Date releaseDate = sdf.parse(campos[2]);
-            float score = Float.parseFloat(campos[3]);
-            List<String> genres = Arrays.asList(campos[4].replaceAll("\"", "").split(","));
-            String overview = campos[5];
-            String originalTitle = campos[6];
-            List<String> originalLanguage = Arrays.asList(campos[7].replaceAll("\"", "").split(","));
-            float budget = Float.parseFloat(campos[8]);
-            String country = campos[9];
-            return new Movie(id, name, releaseDate, score, genres, overview, originalTitle, originalLanguage, budget, country);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+       
+        String[] campos = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        String name = campos[0];
+        Date releaseDate = releaseDateFromString(campos[1]);
+        float score = Float.parseFloat(campos[2]);
+        List<String> genres = Arrays.asList(campos[3].replaceAll("\"", "").split(","));
+        String overview = campos[4].replaceAll("\"", "");
+        String originalTitle = campos[5];
+        List<String> originalLanguage = Arrays.asList(campos[6].replaceAll("\"", "").split(","));
+        float budget = Float.parseFloat(campos[7]);
+        String country = campos[8];
+        return new Movie(0,name, releaseDate, score, genres, overview, originalTitle, originalLanguage, budget, country);
+        
     }
 
     private static Movie lerFilme(int id) throws IOException {
@@ -242,14 +247,9 @@ public class Main {
    
                 System.out.print("Data de lancamento (atual: " + filmeAntigo.getFormattedReleaseDate() + "): ");
                 String releaseDateStr = scanner.nextLine();
-                Date releaseDate = new Date();
-                try {
-                    releaseDate = new SimpleDateFormat("MM/dd/yyyy").parse(releaseDateStr);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                Date releaseDate = releaseDateFromString(releaseDateStr);
    
-                System.out.print("Nota (atual: " + filmeAntigo.getScore() + "): ");
+                System.out.print("Nota (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getScore()) + "): ");
                 float score = scanner.nextFloat();
                 scanner.nextLine();
    
@@ -265,7 +265,7 @@ public class Main {
                 System.out.print("Idiomas Originais (atual: " + filmeAntigo.getOriginalLanguage() + "): ");
                 List<String> originalLanguage = Arrays.asList(scanner.nextLine().split(","));
    
-                System.out.print("Orcamento (atual: " + filmeAntigo.getBudget() + "): ");
+                System.out.print("Orcamento (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getBudget()) + "): ");
                 float budget = scanner.nextFloat();
                 scanner.nextLine();
    
@@ -340,7 +340,7 @@ public class Main {
     private static void salvarNoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "rw")) {
             arqCSV.setLength(0); // Limpa o arquivo antes de salvar
-            arqCSV.writeBytes("ID,names,date_x,score,genre,overview,orig_title,orig_lang,budget_x,country\n");
+            arqCSV.writeBytes("name,date_x,score,genre,overview,orig_title,orig_lang,budget_x,country\n");
             try (RandomAccessFile arqBin = new RandomAccessFile(ARQ, "r")) {
                 arqBin.seek(4); // Pula o último ID salvo
                 while (arqBin.getFilePointer() < arqBin.length()) {
