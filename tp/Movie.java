@@ -3,7 +3,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat; 
 import java.util.Date;
 import java.util.List;
 
@@ -12,10 +12,10 @@ public class Movie {
     private String name; // String de tamanho variável
     private Date releaseDate; // Data
     private float score; // Float
-    private List<String> genres; // Lista de valores com separador a definir
+    private List<String> genres; // Lista de valores com separador 
     private String overview; // String de tamanho variável
     private String originalTitle; // String de tamanho variável
-    private List<String> originalLanguage; // Lista de valores com separador a definir
+    private List<String> originalLanguage; // Lista de valores com separador 
     private float budget; // Float
     private String country; // String de tamanho fixo
 
@@ -129,18 +129,23 @@ public class Movie {
 
     // Método toString
     @Override
-    public String toString() {
+    public String toString() { // Transforma na String do CSV
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        return "ID: " + id +
-               "\nName: " + name +
-               "\nRelease Date: " + sdf.format(releaseDate) +
-               "\nScore: " + score +
-               "\nGenres: " + String.join(",", genres) + 
-               "\nOverview: " + overview +
-               "\nOriginal Title: " + originalTitle +
-               "\nOriginal Language: " + String.join(",", originalLanguage) +
-               "\nBudget: " + budget +
-               "\nCountry: " + country;
+        return id + "," +
+               name + "," +
+               sdf.format(releaseDate) + "," +
+               String.format("%.1f", score) + "," +
+               listToString(genres) + "," +
+               overview + "," +
+               originalTitle + "," +
+               listToString(originalLanguage) + "," +
+               String.format("%.1f", budget) + "," +
+               country + "\n";
+    }
+
+    public String listToString(List<String> lista){
+        if(lista.size() > 1) return "\"" + String.join(",", lista) + "\"";
+        else return lista.getFirst();
     }
 
     // Método toByteArray
