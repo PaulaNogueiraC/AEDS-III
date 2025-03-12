@@ -19,6 +19,7 @@ public class Movie {
     private List<String> originalLanguage; // Lista de valores com separador 
     private float budget; // Float
     private String country; // String de tamanho fixo
+    private static final int TAM_COUNTRY = 2; // Tamanho máximo da string de tamanho fixo
 
     // Construtor padrão
     public Movie() {}
@@ -35,7 +36,7 @@ public class Movie {
         this.originalTitle = originalTitle;
         this.originalLanguage = originalLanguage;
         this.budget = budget;
-        this.country = country;
+        setCountry(country);
     }
 
     // Getter e Setter para id
@@ -124,9 +125,16 @@ public class Movie {
         return country;
     }
 
-    public void setCountry(String country) {
-        this.country = country;
+    private void setCountry(String countryStr) {
+        int length = countryStr.length();
+        StringBuilder pais = new StringBuilder(TAM_COUNTRY);
+        for (int i = 0; i < TAM_COUNTRY; i++) {
+            if(i < length) pais.append(countryStr.charAt(i));
+            else pais.append(' ');
+        }
+        this.country = pais.toString();
     }
+
 
     // Método toString
     @Override
@@ -140,7 +148,7 @@ public class Movie {
                originalTitle + "," +
                listToString(originalLanguage) + "," +
                String.format(Locale.US,"%.1f", budget) + "," +
-               country + "\n";
+               country.trim() + "\n";
     }
 
     public String listToString(List<String> lista){
@@ -152,37 +160,53 @@ public class Movie {
     public byte[] toByteArray() throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
-        
+
         dos.writeInt(id);
-        dos.writeUTF(name);
-        dos.writeLong(releaseDate.getTime()); // Armazenando a data como timestamp
+        writeString(dos, name);
+        dos.writeLong(releaseDate.getTime());
         dos.writeFloat(score);
-        dos.writeUTF(String.join(",", genres));  // Convertendo lista de gêneros para string
-        dos.writeUTF(overview);
-        dos.writeUTF(originalTitle);
-        dos.writeUTF(String.join(",", originalLanguage)); // Convertendo lista de linguas para string
+        writeString(dos, String.join(",", genres));
+        writeString(dos, overview);
+        writeString(dos, originalTitle);
+        writeString(dos, String.join(",", originalLanguage));
         dos.writeFloat(budget);
-        dos.writeUTF(country);
+        writeString(dos, country);
 
         return baos.toByteArray();
     }
 
-    // Método fromByteArray
+    // Método auxiliar para garantir codificação UTF-8 correta
+    private void writeString(DataOutputStream dos, String str) throws IOException {
+        byte[] utf8Bytes = str.getBytes("UTF-8");
+        dos.writeInt(utf8Bytes.length); // Escreve o tamanho da string
+        dos.write(utf8Bytes); // Escreve os bytes da string
+    }
+
+
     public void fromByteArray(byte[] ba) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);
-        
+
         id = dis.readInt();
-        name = dis.readUTF();
-        releaseDate = new Date(dis.readLong()); // Convertendo a string de volta para Date
+        name = readString(dis);
+        releaseDate = new Date(dis.readLong());
         score = dis.readFloat();
-        genres = List.of(dis.readUTF().split(","));  // Convertendo a string de volta para lista
-        overview = dis.readUTF();
-        originalTitle = dis.readUTF();
-        originalLanguage = List.of(dis.readUTF().split(",")); // Convertendo a string de volta para lista
+        genres = List.of(readString(dis).split(","));
+        overview = readString(dis);
+        originalTitle = readString(dis);
+        originalLanguage = List.of(readString(dis).split(","));
         budget = dis.readFloat();
-        country = dis.readUTF();
+        country = readString(dis);
     }
+
+    // Método auxiliar para garantir leitura correta em UTF-8
+    private String readString(DataInputStream dis) throws IOException {
+        int length = dis.readInt(); // Lê o tamanho da string
+        byte[] utf8Bytes = new byte[length];
+        dis.readFully(utf8Bytes); // Lê os bytes da string
+        return new String(utf8Bytes, "UTF-8"); // Converte para string corretamente
+    }
+
 
     // Método para formatar a data no formato MM/dd/yyyy
     public String getFormattedReleaseDate() {

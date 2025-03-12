@@ -1,16 +1,18 @@
 import java.io.IOException;
 import java.io.RandomAccessFile; 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-//Problema: caracteres especiais voltando esquisitos para o CSV
 
 public class Main {
     private static final String ARQ = "imdb_movies.db";
     private static final String CSV = "imdb_movies.csv";
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     private static int ultimoId = 0;
 
     public static void main(String[] args) throws IOException {
@@ -79,14 +81,30 @@ public class Main {
             System.out.print("Nome: ");
             String name = scanner.nextLine();
 
-            System.out.print("Data de lancamento (MM/dd/yyyy): ");
-            String releaseDateStr = scanner.nextLine();
-            Date releaseDate = releaseDateFromString(releaseDateStr);
+            Date releaseDate = null;
+            while (releaseDate == null) {  // Continua pedindo até que a data seja válida
+                System.out.print("Data de lancamento (MM/dd/yyyy): ");
+                String releaseDateString = scanner.nextLine();
+                try {
+                    releaseDate = sdf.parse(releaseDateString); // Converte a string para Date usando o SimpleDateFormat global
+                } catch (ParseException e) {
+                    System.out.println("Data invalida, tente novamente.");
+                }
+            }
                         
-            
-            System.out.print("Nota: ");
-            float score = scanner.nextFloat();
-            scanner.nextLine();
+            float score = 0;
+            boolean valido = false;
+            do {
+                System.out.print("Nota: ");
+                try {
+                    score = scanner.nextFloat();  // Tenta ler um float
+                    valido = true;  // Se a entrada for válida, define valido como true
+                } catch (InputMismatchException e) {
+                    // Caso não seja um float válido, exibe uma mensagem de erro
+                    System.out.println("Entrada invalida, tente novamente.");
+                    scanner.nextLine(); // Limpa o buffer do scanner
+                }
+            } while (!valido);
             
             System.out.print("Generos (separados por virgula): ");
             List<String> genres = Arrays.asList(scanner.nextLine().split(","));
@@ -99,10 +117,20 @@ public class Main {
             
             System.out.print("Idiomas Originais (separados por virgula): ");
             List<String> originalLanguage = Arrays.asList(scanner.nextLine().split(","));
-            
-            System.out.print("Orcamento: ");
-            float budget = scanner.nextFloat();
-            scanner.nextLine();
+
+            float budget = 0;
+            valido = false;
+            do {
+                System.out.print("Orcamento: ");
+                try {
+                    budget = scanner.nextFloat();  // Tenta ler um float
+                    valido = true;  // Se a entrada for válida, define valido como true
+                } catch (InputMismatchException e) {
+                    // Caso não seja um float válido, exibe uma mensagem de erro
+                    System.out.println("Entrada invalida, tente novamente.");
+                    scanner.nextLine(); // Limpa o buffer do scanner
+                }
+            } while (!valido);
             
             System.out.print("Pais: ");
             String country = scanner.nextLine();
@@ -121,18 +149,6 @@ public class Main {
             arq.write(filmeData);
             System.out.println("\nFilme adicionado com sucesso!");
         }
-    }
-            
-    // Método para converter uma string no formato MM/dd/yyyy para Date
-    public static Date releaseDateFromString(String releaseDateString) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-            Date data = sdf.parse(releaseDateString); // Converte a string para Date
-            return data;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     private static void carregarDoCSV() throws IOException {
@@ -173,6 +189,17 @@ public class Main {
         String country = campos[8];
         return new Movie(0,name, releaseDate, score, genres, overview, originalTitle, originalLanguage, budget, country);
         
+    }
+
+    // Método para converter uma string no formato MM/dd/yyyy para Date
+    public static Date releaseDateFromString(String releaseDateString) {
+        try {
+            Date data = sdf.parse(releaseDateString); // Converte a string para Date
+            return data;
+        } catch (ParseException e) {
+            System.out.println("Data inválida.");
+        }
+        return null;
     }
 
     private static Movie lerFilme(int id) throws IOException {
@@ -244,14 +271,32 @@ public class Main {
                 // Agora, vamos pedir as novas informações para o filme
                 System.out.print("Nome (atual: " + filmeAntigo.getName() + "): ");
                 String name = scanner.nextLine();
+
+                Date data = null;
+                while (data == null) {  // Continua pedindo até que a data seja válida
+                    System.out.print("Data de lancamento (atual: " + filmeAntigo.getFormattedReleaseDate() + "): ");
+                    String releaseDateString = scanner.nextLine();
+                    try {
+                        data = sdf.parse(releaseDateString); // Converte a string para Date usando o SimpleDateFormat global
+                    } catch (ParseException e) {
+                        System.out.println("Data invalida, tente novamente.");
+                    }
+                }
+                Date releaseDate = data;
    
-                System.out.print("Data de lancamento (atual: " + filmeAntigo.getFormattedReleaseDate() + "): ");
-                String releaseDateStr = scanner.nextLine();
-                Date releaseDate = releaseDateFromString(releaseDateStr);
-   
-                System.out.print("Nota (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getScore()) + "): ");
-                float score = scanner.nextFloat();
-                scanner.nextLine();
+                float score = 0;
+                boolean valido = false;
+                do {
+                    System.out.print("Nota (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getScore()) + "): ");
+                    try {
+                        score = scanner.nextFloat();  // Tenta ler um float
+                        valido = true;  // Se a entrada for válida, define valido como true
+                    } catch (InputMismatchException e) {
+                        // Caso não seja um float válido, exibe uma mensagem de erro
+                        System.out.println("Entrada invalida, tente novamente.");
+                        scanner.nextLine(); // Limpa o buffer do scanner
+                    }
+                } while (!valido);
    
                 System.out.print("Generos (atual: " + filmeAntigo.getGenres() + "): ");
                 List<String> genres = Arrays.asList(scanner.nextLine().split(","));
@@ -264,12 +309,22 @@ public class Main {
    
                 System.out.print("Idiomas Originais (atual: " + filmeAntigo.getOriginalLanguage() + "): ");
                 List<String> originalLanguage = Arrays.asList(scanner.nextLine().split(","));
+
+                float budget = 0;
+                valido = false;
+                do {
+                    System.out.print("Orcamento (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getBudget()) + "): ");
+                    try {
+                        budget = scanner.nextFloat();  // Tenta ler um float
+                        valido = true;  // Se a entrada for válida, define valido como true
+                    } catch (InputMismatchException e) {
+                        // Caso não seja um float válido, exibe uma mensagem de erro
+                        System.out.println("Entrada invalida, tente novamente.");
+                        scanner.nextLine(); // Limpa o buffer do scanner
+                    }
+                } while (!valido);
    
-                System.out.print("Orcamento (atual: " + String.format(Locale.US, "%.1f", filmeAntigo.getBudget()) + "): ");
-                float budget = scanner.nextFloat();
-                scanner.nextLine();
-   
-                System.out.print("Pais (atual: " + filmeAntigo.getCountry() + "): ");
+                System.out.print("Pais (atual: " + filmeAntigo.getCountry().trim() + "): ");
                 String country = scanner.nextLine();
    
                 Movie filmeNovo = new Movie(id, name, releaseDate, score, genres, overview, originalTitle, originalLanguage, budget, country);
