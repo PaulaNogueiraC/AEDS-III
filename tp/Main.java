@@ -17,6 +17,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         inicializaUltimoId(); // Lê o último ID salvo
+
+        OrdenacaoExterna externalSorter = new OrdenacaoExterna();
+
         try (Scanner scanner = new Scanner(System.in)) {
             int opcao;
             
