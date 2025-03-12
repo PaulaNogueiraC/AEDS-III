@@ -3,6 +3,122 @@ import java.util.*;
 
 public class OrdenacaoExterna {
 
+    // Método para ordenação externa utilizando Min-Heap
+    public static void metodoOrdenacaoAlternada(String filePath, int m, int n) {
+        List<File> tempFiles = new ArrayList<>();
+        
+        try {
+            // Criando os arquivos temporários onde os blocos ordenados serão armazenados
+            ObjectOutputStream[] outputStreams = new ObjectOutputStream[n];
+            for (int i = 0; i < n; i++) {
+                File tempFile = File.createTempFile("tempFile" + i, ".tmp");
+                tempFiles.add(tempFile);
+                outputStreams[i] = new ObjectOutputStream(new FileOutputStream(tempFile));
+            }
+
+            Main principal = new Main();
+            int id = 1; // Começa a buscar os filmes pelo ID
+            int index = 0; // Índice para alternar entre os arquivos temporários
+            
+            // Usando Min-Heap (PriorityQueue)
+            PriorityQueue<Movie> heap = new PriorityQueue<>(Comparator.comparing(Movie::getId));
+
+            while (true) {
+                try {
+                    heap.clear(); // Limpa a heap antes de cada leitura de bloco
+                    
+                    // Lendo `m` registros do arquivo original e inserindo na heap
+                    for (int i = 0; i < m; i++) {
+                        Movie filme = principal.getId(filePath, id++); // Busca o filme pelo ID
+                        if (filme == null) {
+                            throw new EOFException(); // Se não houver mais filmes, sai do loop
+                        }
+                        heap.add(filme); // Adiciona o filme na heap
+                    }
+
+                    // Removendo os filmes da heap e escrevendo nos arquivos temporários
+                    while (!heap.isEmpty()) {
+                        outputStreams[index % n].writeObject(heap.poll()); // Grava nos arquivos alternadamente
+                        index++;
+                    }
+                } catch (EOFException e) {
+                    break; // Quando chegar no fim do arquivo original, sai do loop
+                }
+            }
+
+            // Fecha os streams de saída dos arquivos temporários
+            for (ObjectOutputStream outputStream : outputStreams) {
+                outputStream.close();
+            }
+
+            // Segunda fase: Intercalação usando Min-Heap
+            List<ObjectInputStream> inputStreams = new ArrayList<>();
+            for (File tempFile : tempFiles) {
+                inputStreams.add(new ObjectInputStream(new FileInputStream(tempFile))); // Abre os arquivos temporários para leitura
+            }
+
+            // Criando o arquivo final onde os filmes ordenados serão armazenados
+            File finalFile = new File("movies_sorted.bin");
+            try (ObjectOutputStream finalOutput = new ObjectOutputStream(new FileOutputStream(finalFile))) {
+                // Heap de intercalação
+                PriorityQueue<MovieEntry> mergeHeap = new PriorityQueue<>(Comparator.comparing(e -> e.movie.getId()));
+
+                // Inserindo o primeiro registro de cada arquivo na heap
+                for (int i = 0; i < inputStreams.size(); i++) {
+                    try {
+                        Movie filme = (Movie) inputStreams.get(i).readObject(); // Lê um filme de cada arquivo
+                        mergeHeap.add(new MovieEntry(filme, i)); // Adiciona o filme e o índice do arquivo na heap
+                    } catch (EOFException e) {
+                        // Arquivo pode estar vazio, então ignoramos
+                    }
+                }
+
+                // Processo de intercalação
+                while (!mergeHeap.isEmpty()) {
+                    MovieEntry entry = mergeHeap.poll(); // Pega o menor filme da heap
+                    finalOutput.writeObject(entry.movie); // Escreve no arquivo final ordenado
+
+                    // Tenta ler o próximo filme do mesmo arquivo de onde esse veio
+                    try {
+                        Movie nextMovie = (Movie) inputStreams.get(entry.fileIndex).readObject();
+                        mergeHeap.add(new MovieEntry(nextMovie, entry.fileIndex)); // Adiciona na heap
+                    } catch (EOFException e) {
+                        // Esse arquivo acabou, então não adicionamos mais elementos dele
+                    }
+                }
+            }
+
+            // Fecha os arquivos temporários
+            for (ObjectInputStream in : inputStreams) {
+                in.close();
+            }
+
+            // Exclui os arquivos temporários, pois não são mais necessários
+            for (File tempFile : tempFiles) {
+                tempFile.delete();
+            }
+
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace(); // Exibe qualquer erro ocorrido
+        }
+    }
+
+    // Classe auxiliar para gerenciar Movie e o índice do arquivo de origem na intercalação
+    static class MovieEntry {
+        Movie movie; // Objeto do filme
+        int fileIndex; // Índice do arquivo de onde ele veio
+
+        MovieEntry(Movie movie, int fileIndex) {
+            this.movie = movie;
+            this.fileIndex = fileIndex;
+        }
+    }
+}
+
+
+/* 
+public class OrdenacaoExterna {
+
     public static void metodoOrdenacaoAlternada(String filePath, int m, int n) {
         try {
             List<File> tempFiles = new ArrayList<>();
@@ -27,7 +143,7 @@ public class OrdenacaoExterna {
                 try {
                     filmes.clear();
                     for (int i = 0; i < m; i++) {
-                        Movie filme = principal.getElementById(filePath, id++);
+                        Movie filme = principal.getId(filePath, id++);
                         if (filme == null) {
                             throw new EOFException();
                         }
@@ -122,7 +238,7 @@ public class OrdenacaoExterna {
             }
 
             // Salvar os filmes ordenados no arquivo de saída
-            principal.salvarNoCSV(sortedMovies, "movies_database.bin");
+            //principal.salvarNoCSV(sortedMovies, "movies_database.bin");
 
             // Excluir arquivos temporários
             for (File tempFile : tempFiles) {
@@ -134,8 +250,8 @@ public class OrdenacaoExterna {
         }
     }
 }
-
-
+*/
+/* 
 import java.io.*;
 import java.util.*;
 
@@ -287,3 +403,4 @@ public class OrdenacaoExterna {
         }
     }
 }
+*/

@@ -76,6 +76,7 @@ public class Main {
         }
     }
 
+    //Método para adicionar filme
     private static void adicionarFilme(Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
 
@@ -152,6 +153,7 @@ public class Main {
         }
     }
 
+    //Método para carregar do CSV
     private static void carregarDoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "r")) {
             String linha;
@@ -176,6 +178,7 @@ public class Main {
         }
     }
 
+    //Método para ler linha CSV
     private static Movie lerLinhaCSV(String linha) {
        
         String[] campos = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
@@ -203,6 +206,7 @@ public class Main {
         return null;
     }
 
+    //Método para ler filme
     private static Movie lerFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "r")) {
             arq.seek(0);
@@ -230,6 +234,7 @@ public class Main {
         }
     }
 
+    //Método para alterar filme
     private static void alterarFilme(int id, Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
@@ -356,6 +361,7 @@ public class Main {
             }
     }
 
+    //Método para deletar filme
     private static void deletarFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
@@ -393,6 +399,7 @@ public class Main {
         }
     }    
 
+    //Método para salvar filme no CSV
     private static void salvarNoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "rw")) {
             arqCSV.setLength(0); // Limpa o arquivo antes de salvar
@@ -416,5 +423,35 @@ public class Main {
                 }
             }
         }
+    }
+
+    //teste
+    public Movie getId(String filePath, int id) throws IOException {
+        try (RandomAccessFile arq = new RandomAccessFile(filePath, "r")) {
+            arq.seek(0);
+            ultimoId = arq.readInt();
+            
+            if (id > ultimoId) {
+                return null; // ID não existe
+            }
+
+            while (arq.getFilePointer() < arq.length()) {
+                boolean deletado = arq.readBoolean();
+                int tamanhoRegistro = arq.readInt();
+
+                if (!deletado) {
+                    byte[] data = new byte[tamanhoRegistro];
+                    arq.readFully(data);
+                    Movie filme = new Movie();
+                    filme.fromByteArray(data);
+                    if (filme.getId() == id) {
+                        return filme; // Retorna o filme encontrado
+                    }
+                } else {
+                    arq.skipBytes(tamanhoRegistro); // Pula registros deletados
+                }
+            }
+        }
+        return null; // Filme não encontrado
     }
 }
