@@ -10,18 +10,19 @@ import java.util.Locale;
 import java.util.Scanner;
 
 public class Main {
-    private static final String ARQ = "imdb_movies.db";
-    private static final String CSV = "imdb_movies.csv";
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-    private static int ultimoId = 0;
+    private static final String ARQ = "imdb_movies.db"; // Arquivo binário para armazenamento dos filmes
+    private static final String CSV = "imdb_movies.csv"; // Arquivo CSV para exportação de dados
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy"); // Formato de data
+    private static int ultimoId = 0; // Variável para controle do último ID utilizado
 
     public static void main(String[] args) throws IOException {
-        inicializaUltimoId(); // Lê o último ID salvo
+        inicializaUltimoId(); // Lê o último ID salvo no arquivo binário
 
         try (Scanner scanner = new Scanner(System.in)) {
             int opcao;
             
             do {
+                // Exibe o menu para o usuário escolher a ação
                 System.out.println("\nMenu:");
                 System.out.println("1. Carregar filmes do CSV");
                 System.out.println("2. Adicionar filme");
@@ -33,14 +34,15 @@ public class Main {
                 opcao = scanner.nextInt();
                 scanner.nextLine();
                 
+                // Switch para tratar as opções escolhidas
                 switch (opcao) {
-                    case 1 -> carregarDoCSV();
-                    case 2 -> adicionarFilme(scanner);
+                    case 1 -> carregarDoCSV(); // Carregar filmes do CSV para o banco de dados binário
+                    case 2 -> adicionarFilme(scanner); // Adicionar um novo filme
                     case 3 -> {
                         System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
-                        Movie ler = lerFilme(id);
+                        Movie ler = lerFilme(id); // Ler um filme pelo ID
                         if(ler == null) System.out.println("Nao existe um filme com esse ID.");
                         else System.out.println(ler.toString());
                     }
@@ -48,18 +50,18 @@ public class Main {
                         System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
-                        alterarFilme(id, scanner);
+                        alterarFilme(id, scanner); // Alterar informações de um filme
                     }
                     case 5 -> {
                         System.out.print("\nID do filme: ");
                         int id = scanner.nextInt();
                         scanner.nextLine();
-                        deletarFilme(id);
+                        deletarFilme(id); // Deletar um filme pelo ID
                     }
                     case 6 -> {
                         OrdenacaoExterna2 ord = new OrdenacaoExterna2();
-                        ord.ordenar(ARQ);
-                        salvarNoCSV();
+                        ord.ordenar(ARQ); // Ordenar os filmes
+                        salvarNoCSV(); // Salvar os filmes no arquivo CSV
                         System.out.println("Saindo...");
                     }
                     default -> System.out.println("Opcao invalida!");
@@ -69,6 +71,7 @@ public class Main {
     }
 
     private static void inicializaUltimoId() throws IOException {
+        // Se o arquivo binário não estiver vazio, lê o último ID utilizado
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             if (arq.length() > 0) {
                 ultimoId = arq.readInt();
@@ -81,11 +84,13 @@ public class Main {
     private static void adicionarFilme(Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
 
+            // Solicita os dados do filme para o usuário
             System.out.print("Nome: ");
             String name = scanner.nextLine();
 
+            // Solicita a data de lançamento e valida se está no formato correto
             Date releaseDate = null;
-            while (releaseDate == null) {  // Continua pedindo até que a data seja válida
+            while (releaseDate == null) {  
                 System.out.print("Data de lancamento (MM/dd/yyyy): ");
                 String releaseDateString = scanner.nextLine();
                 try {
@@ -111,6 +116,7 @@ public class Main {
 
             scanner.nextLine(); // Consumir a linha vazia restante após nextFloat()
             
+            // Solicita os outros dados do filme
             System.out.print("Generos (separados por virgula): ");
             List<String> genres = Arrays.asList(scanner.nextLine().split(","));
             
@@ -142,6 +148,7 @@ public class Main {
             System.out.print("Pais: ");
             String country = scanner.nextLine();
             
+            // Atualiza o último ID e escreve o filme no arquivo binário
             arq.seek(0);
             ultimoId = arq.readInt();
             
@@ -152,30 +159,31 @@ public class Main {
             arq.seek(arq.length()); // Move o ponteiro para o final do arquivo
             arq.writeBoolean(false); // Lápide que marca como não deletado
             byte[] filmeData = filme.toByteArray();
-            arq.writeInt(filmeData.length);
-            arq.write(filmeData);
+            arq.writeInt(filmeData.length); // Escreve o tamanho do filme
+            arq.write(filmeData); // Escreve os dados do filme
             System.out.println("\nFilme adicionado com sucesso!");
         }
     }
 
     private static void carregarDoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "r")) {
+            // Lê o arquivo CSV e carrega os filmes para o banco de dados binário
             String linha;
             arqCSV.readLine();// Pular Cabeçalho
             while ((linha = arqCSV.readLine()) != null) {
-                Movie filme = lerLinhaCSV(linha);
+                Movie filme = lerLinhaCSV(linha); // Converte a linha CSV para um objeto Movie
                 if (filme != null) {
                     try(RandomAccessFile arqBin = new RandomAccessFile(ARQ, "rw")){
                         arqBin.seek(0);
                         ultimoId = arqBin.readInt();
                         filme.setId(++ultimoId); 
                         arqBin.seek(0);
-                        arqBin.writeInt(ultimoId);
+                        arqBin.writeInt(ultimoId); // Atualiza o último ID
                         arqBin.seek(arqBin.length()); // Move o ponteiro para o final do arquivo
                         arqBin.writeBoolean(false); // Lápide que marca como não deletado
                         byte[] filmeData = filme.toByteArray();
-                        arqBin.writeInt(filmeData.length);
-                        arqBin.write(filmeData);
+                        arqBin.writeInt(filmeData.length); // Escreve o tamanho do filme
+                        arqBin.write(filmeData); // Escreve os dados do filme
                     }
                 }
             }
@@ -183,7 +191,8 @@ public class Main {
     }
 
     private static Movie lerLinhaCSV(String linha) {
-       
+
+        // Converte a linha do CSV para um objeto Movie
         String[] campos = linha.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
         String name = campos[0];
         Date releaseDate = releaseDateFromString(campos[1]);
@@ -209,11 +218,12 @@ public class Main {
         return null;
     }
 
+    // Método para ler um filme
     private static Movie lerFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "r")) {
             arq.seek(0);
             ultimoId = arq.readInt();
-            if(id > ultimoId) return null;
+            if(id > ultimoId) return null; // Se o ID for maior que o último ID, retorna null
             else{
                 while (arq.getFilePointer() < arq.length()) {
                     boolean deletado = arq.readBoolean();
@@ -236,6 +246,7 @@ public class Main {
         }
     }
 
+    // Método para alterar um filme
     private static void alterarFilme(int id, Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
@@ -366,6 +377,7 @@ public class Main {
             }
     }
 
+    // Método para deletar um filme
     private static void deletarFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
@@ -403,6 +415,7 @@ public class Main {
         }
     }    
 
+    // Método para salvar um filme no arquivo CSV
     private static void salvarNoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "rw")) {
             arqCSV.setLength(0); // Limpa o arquivo antes de salvar
