@@ -1,8 +1,7 @@
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class OrdenacaoExterna2 {
 
@@ -18,11 +17,11 @@ public class OrdenacaoExterna2 {
             ultimoId = arq.readInt();// Ler o ultimoId
         }
         //Inicializando as variaveis com o numero de registro por blocos e o numero de caminhos a serem usados.
-        int numRegistrosPorBloco = 800; //727
+        int numRegistrosPorBloco = 727; //727
         int numCaminhos = 2;
 
         // Diretório de arquivos temporários que você deseja criar
-        String nomeDir = "arquivos_temporarios1";
+        String nomeDir = "arquivos_temporarios";
         Path tempDirPath = Paths.get(nomeDir);
 
         // Verifica se o diretório já existe
@@ -40,7 +39,7 @@ public class OrdenacaoExterna2 {
 
         List<RandomAccessFile> conjunto1 = distribuirBlocosOrdenados(caminhoArquivo, nomeDir, numRegistrosPorBloco, numCaminhos);
 
-        // Criar mais numCaminhos arquivos temporários
+        //  Criar mais numCaminhos arquivos temporários
         List<RandomAccessFile> conjunto2 = new ArrayList<>();
 
         for (int i = 1; i <= numCaminhos; i++) {
@@ -68,43 +67,74 @@ public class OrdenacaoExterna2 {
             numRegistrosPorBloco = 2 * numRegistrosPorBloco;
         } while (conjunto1.size() != 1 && conjunto2.size() != 1);
 
-        String nomeArquivo;
+        if(conjunto1.size() == 1){
+            try(RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "rw")){
+                arq.setLength(0);
+                arq.writeInt(ultimoId); 
+                conjunto1.getFirst().seek(0);
+                while(conjunto1.getFirst().getFilePointer() < conjunto1.getFirst().length()){
+                    conjunto1.getFirst().readBoolean();
+                    arq.writeBoolean(false);
+                    int tamRegistro = conjunto1.getFirst().readInt();
+                    arq.writeInt(tamRegistro);
+                    byte[] registro = new byte[tamRegistro];
+                    conjunto1.getFirst().read(registro);
+                    arq.write(registro);
+                }
+            }
+        }else{
+            try(RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "rw")){
+                arq.setLength(0);
+                arq.writeInt(ultimoId); 
+                conjunto2.getFirst().seek(0);
+                while(conjunto2.getFirst().getFilePointer() < conjunto2.getFirst().length()){
+                    conjunto2.getFirst().readBoolean();
+                    arq.writeBoolean(false);
+                    int tamRegistro = conjunto2.getFirst().readInt();
+                    arq.writeInt(tamRegistro);
+                    byte[] registro = new byte[tamRegistro];
+                    conjunto2.getFirst().read(registro);
+                    arq.write(registro);
+                }
+            }
+        }
 
-        //Copiar o arquivo ordenado para o original
-        if(conjunto1.size() == 1) nomeArquivo = new File(conjunto1.getFirst().getFD().toString()).getPath();
-        else nomeArquivo = new File(conjunto2.getFirst().getFD().toString()).getPath();
-        String origem = nomeArquivo;
-        String destino = caminhoArquivo;
+        // Apagar os arquivos temporários
+        Path diretorio = Paths.get(nomeDir); 
 
-        try (FileInputStream fis = new FileInputStream(origem);
-             FileOutputStream fos = new FileOutputStream(destino);
-             FileChannel sourceChannel = fis.getChannel();
-             FileChannel destChannel = fos.getChannel()) {
-
-            // 1️⃣ Escreve um número inteiro no início do arquivo de destino
-            ByteBuffer buffer = ByteBuffer.allocate(4);
-            buffer.putInt(ultimoId);
-            buffer.flip();
-            destChannel.write(buffer);
-
-            // 2️⃣ Copia o arquivo de origem a partir da quarta posição
-            sourceChannel.position(4); // Pula os primeiros 4 bytes do arquivo de origem
-            destChannel.transferFrom(sourceChannel, destChannel.position(), sourceChannel.size() - 4);
-
-            System.out.println("Arquivo copiado com número no início!");
-
+        try {
+            apagarDiretorioRecursivo(diretorio);
+            System.out.println("Diretório apagado com sucesso.");
         } catch (IOException e) {
-            System.err.println("Erro ao copiar: " + e.getMessage());
-        }
-
-        // Fechar os arquivos temporários
-        for (RandomAccessFile file : conjunto1) {
-            file.close();
-        }
-        for (RandomAccessFile file : conjunto2) {
-            file.close();
+            System.err.println("Erro ao apagar diretório: " + e.getMessage());
         }
         
+    }
+
+    public static void apagarDiretorioRecursivo(Path diretorio) throws IOException {
+        if (Files.exists(diretorio)) {
+            try (Stream<Path> arquivos = Files.walk(diretorio)) {
+                arquivos.sorted((path1, path2) -> -path1.compareTo(path2)) // Ordena para apagar arquivos antes de diretórios
+                .forEach(path -> {
+                    try {
+                        File file = path.toFile();
+                        if (file.isFile()) { // Verifica se é um arquivo antes de tentar fechar
+                            try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")) {
+                                randomAccessFile.close();
+                            } catch (IOException e) {
+                                System.err.println("Falha ao fechar " + path + ": " + e.getMessage());
+                            }
+                            Thread.sleep(10000); // Espera 1 segundo
+                        }
+                        Files.delete(path);
+                    } catch (IOException | InterruptedException e) {
+                        System.err.println("Falha ao apagar " + path + ": " + e.getMessage());
+                    }
+                });
+            }
+        } else {
+            System.out.println("Diretório não existe: " + diretorio);
+        }
     }
 
     private static Movie lerSequencial(String filePath) throws IOException {
@@ -187,7 +217,6 @@ public class OrdenacaoExterna2 {
                 break; // Fim do arquivo original
             }
         }
-        System.out.println(quantRegistrosValidos);
         return tempFilesSet1; // Retornar os arquivos gerados para a intercalação
     }
 
@@ -206,41 +235,33 @@ public class OrdenacaoExterna2 {
             int index = 0;
             int vezes = (int) Math.ceil((double) quantRegistrosValidos / numCaminhos); // Maior quantidade de registros por arquivo temporário
             vezes = (int) Math.ceil((double) vezes / tamanhoBloco); // Maior numero de blocos em um arquivo temporário
-            System.out.println(vezes); // 7, 4, 2, 1
             for(int v = 0; v < vezes; v++){
                 List<Movie> movies = new ArrayList<>(Collections.nCopies(arquivosTemp1.size(), null));
                 List<Integer> recordCounts = new ArrayList<>(Collections.nCopies(arquivosTemp1.size(), 0));
 
                 for (int i = 0; i < arquivosTemp1.size(); i++) {
                     RandomAccessFile file = arquivosTemp1.get(i);
-                        
-                    // Ler o tamanho do primeiro registro
-                    try {
-                        file.seek(filePointers.get(i));
-                        if (file.length() - filePointers.get(i) >= 5){
-                            boolean deletado = file.readBoolean();
-                            int recordSize = file.readInt();
+
+                    // Ler o tamanho do primeiro registr0
+                    file.seek(filePointers.get(i));
+                    if(file.getFilePointer() < file.length()){   
+                        file.readBoolean();
+                        int recordSize = file.readInt();
                 
-                            if (recordSize > 0 && file.length() - file.getFilePointer() >= recordSize) {
-                                byte[] byteArray = new byte[recordSize];
-                                file.readFully(byteArray);
-                                Movie filme = new Movie();
-                                filme.fromByteArray(byteArray);
-                                movies.set(i, filme);
-                                filePointers.set(i, file.getFilePointer());
-                            }else {
-                                movies.set(i,null);
-                            }
-                        }else {
-                            movies.set(i, null); // Arquivo sem dados suficientes
+                        if (recordSize > 0) {
+                            byte[] byteArray = new byte[recordSize];
+                            file.readFully(byteArray);
+                            Movie filme = new Movie();
+                            filme.fromByteArray(byteArray);
+                            movies.set(i, filme);
+                            filePointers.set(i, file.getFilePointer());
+                        } else {
+                            movies.set(i, null);  // Se o tamanho for 0 ou arquivo vazio, remove
                         }
-                    } catch (EOFException e) {
-                        System.err.println("EOFException ao ler arquivo " + i + ": " + e.getMessage());
-                        movies.set(i, null); // Marca o arquivo como vazio
-                    } catch (IOException e) {
-                        System.err.println("IOException ao ler arquivo " + i + ": " + e.getMessage());
-                        movies.set(i, null); // Marca o arquivo como vazio
+                    } else {
+                        movies.set(i, null);  // Arquivo vazio, remove o Movie
                     }
+                
                 }
 
                 while (true) {
@@ -276,6 +297,9 @@ public class OrdenacaoExterna2 {
                         }
                             
                     }
+
+                    // Incrementa o contador de registros processados
+                    recordCounts.set(minIndex, recordCounts.get(minIndex) + 1);
                 
                     // Verificar se já processamos tamanhoBlocos registros para esse arquivo
                     if (recordCounts.get(minIndex) >= tamanhoBloco) {
@@ -300,8 +324,6 @@ public class OrdenacaoExterna2 {
                         } else {
                             movies.set(minIndex, null);  // Arquivo vazio, remove o Movie
                         }
-                        // Incrementa o contador de registros processados
-                        recordCounts.set(minIndex, recordCounts.get(minIndex) + 1);
                     }
                 }
         
