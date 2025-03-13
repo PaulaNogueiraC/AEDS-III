@@ -57,6 +57,8 @@ public class Main {
                         deletarFilme(id);
                     }
                     case 6 -> {
+                        OrdenacaoExterna2 ord = new OrdenacaoExterna2();
+                        ord.ordenar(ARQ);
                         salvarNoCSV();
                         System.out.println("Saindo...");
                     }
@@ -106,6 +108,8 @@ public class Main {
                     scanner.nextLine(); // Limpa o buffer do scanner
                 }
             } while (!valido);
+
+            scanner.nextLine(); // Consumir a linha vazia restante após nextFloat()
             
             System.out.print("Generos (separados por virgula): ");
             List<String> genres = Arrays.asList(scanner.nextLine().split(","));
@@ -132,6 +136,8 @@ public class Main {
                     scanner.nextLine(); // Limpa o buffer do scanner
                 }
             } while (!valido);
+
+            scanner.nextLine(); // Consumir a linha vazia restante após nextFloat()
             
             System.out.print("Pais: ");
             String country = scanner.nextLine();
@@ -298,6 +304,8 @@ public class Main {
                         scanner.nextLine(); // Limpa o buffer do scanner
                     }
                 } while (!valido);
+
+                scanner.nextLine(); // Consumir a linha vazia restante após nextFloat()
    
                 System.out.print("Generos (atual: " + filmeAntigo.getGenres() + "): ");
                 List<String> genres = Arrays.asList(scanner.nextLine().split(","));
@@ -324,6 +332,8 @@ public class Main {
                         scanner.nextLine(); // Limpa o buffer do scanner
                     }
                 } while (!valido);
+
+                scanner.nextLine(); // Consumir a linha vazia restante após nextFloat()
    
                 System.out.print("Pais (atual: " + filmeAntigo.getCountry().trim() + "): ");
                 String country = scanner.nextLine();
