@@ -145,15 +145,15 @@ public class Movie {
                String.format(Locale.US,"%.1f", score) + "," +
                listToString(genres) + "," +
                "\"" + overview + "\"" + "," +
-               originalTitle + "," +
+               originalTitle.trim() + "," +
                listToString(originalLanguage) + "," +
                String.format(Locale.US,"%.1f", budget) + "," +
                country.trim() + "\n";
     }
 
     public String listToString(List<String> lista){
-        if(lista.size() > 1) return "\"" + String.join(",", lista) + "\"";
-        else return lista.getFirst();
+        if(lista.size() > 1) return "\"" + String.join(",", lista).trim() + "\"";
+        else return lista.getFirst().trim();
     }
 
     // Método toByteArray
