@@ -183,7 +183,6 @@ public class Movie {
     }
 
 
-    //Converte um array de bytes em um objeto Movie
     public void fromByteArray(byte[] ba) throws IOException {
         ByteArrayInputStream bais = new ByteArrayInputStream(ba);
         DataInputStream dis = new DataInputStream(bais);

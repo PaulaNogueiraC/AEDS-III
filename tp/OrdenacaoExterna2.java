@@ -5,23 +5,20 @@ import java.util.stream.Stream;
 
 public class OrdenacaoExterna2 {
 
-    // Variáveis de controle de posição atual e número de registros válidos
     private static long posicaoAtual = 4; // Começa após o int inicial do último ID
     private static int quantRegistrosValidos = 0;
 
-    //Método principal para ordenar o arquivo usando a técnica de ordenação externa
     public void ordenar(String caminhoArquivo) throws IOException {
 
         int ultimoId;
 
-        // Abertura do arquivo original para leitura
         try (RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "r")) {
-            arq.seek(0); // Vai para o início do arquivo
+            arq.seek(0); 
             ultimoId = arq.readInt();// Ler o ultimoId
         }
         //Inicializando as variaveis com o numero de registro por blocos e o numero de caminhos a serem usados.
-        int numRegistrosPorBloco = 727; // Número de registros por bloco
-        int numCaminhos = 2; // Número de arquivos temporários para utilização
+        int numRegistrosPorBloco = 727; //727
+        int numCaminhos = 2;
 
         // Diretório de arquivos temporários que você deseja criar
         String nomeDir = "arquivos_temporarios";
@@ -40,7 +37,6 @@ public class OrdenacaoExterna2 {
             System.out.println("O diretório já existe.");
         }
 
-        // Distribui os registros ordenados nos arquivos temporários
         List<RandomAccessFile> conjunto1 = distribuirBlocosOrdenados(caminhoArquivo, nomeDir, numRegistrosPorBloco, numCaminhos);
 
         //  Criar mais numCaminhos arquivos temporários
@@ -49,18 +45,14 @@ public class OrdenacaoExterna2 {
         for (int i = 1; i <= numCaminhos; i++) {
             File tempFile = new File(nomeDir, "temp2_" + i + ".db");
             RandomAccessFile randomTempFile = new RandomAccessFile(tempFile, "rw");
-            randomTempFile.setLength(0); // Limpa o arquivo antes de usá-lo
+            randomTempFile.setLength(0);
             conjunto2.add(randomTempFile);
         }
 
-        // Variável para controlar a quantidade de iterações na intercalação
         int contador = 0;
-
         do {
-            // Alterna entre os conjuntos de arquivos para realizar a intercalação
             if(contador % 2 == 0){
                 conjunto2 = intercalacaoBalanceada(conjunto1, conjunto2, numRegistrosPorBloco, numCaminhos);
-                // Limpa os arquivos do conjunto1 após a intercalação
                 for (int j = 0; j < numCaminhos; j++) {
                     conjunto1.get(j).setLength(0);
                 }
@@ -72,48 +64,46 @@ public class OrdenacaoExterna2 {
                 }
             }
             contador++;
-            numRegistrosPorBloco = 2 * numRegistrosPorBloco; // Dobra o tamanho do bloco para a próxima intercalação
-        } while (conjunto1.size() != 1 && conjunto2.size() != 1); // Continua enquanto não houver apenas um arquivo final
-
+            numRegistrosPorBloco = 2 * numRegistrosPorBloco;
+        } while (conjunto1.size() != 1 && conjunto2.size() != 1);
 
         if(conjunto1.size() == 1){
             try(RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "rw")){
-                arq.setLength(0); // Apaga o conteúdo do arquivo original
-                arq.writeInt(ultimoId); // Grava o último ID no arquivo original
-                conjunto1.getFirst().seek(0); // Vai para o início do primeiro arquivo temporário
+                arq.setLength(0);
+                arq.writeInt(ultimoId); 
+                conjunto1.getFirst().seek(0);
                 while(conjunto1.getFirst().getFilePointer() < conjunto1.getFirst().length()){
-                    conjunto1.getFirst().readBoolean(); // Lê e ignora o flag de deletado
-                    arq.writeBoolean(false); // Marca como não deletado
-                    int tamRegistro = conjunto1.getFirst().readInt(); // Lê o tamanho do registro
-                    arq.writeInt(tamRegistro); // Grava o tamanho no arquivo original
+                    conjunto1.getFirst().readBoolean();
+                    arq.writeBoolean(false);
+                    int tamRegistro = conjunto1.getFirst().readInt();
+                    arq.writeInt(tamRegistro);
                     byte[] registro = new byte[tamRegistro];
-                    conjunto1.getFirst().read(registro); // Lê os dados do registro
-                    arq.write(registro); // Grava o registro no arquivo original
+                    conjunto1.getFirst().read(registro);
+                    arq.write(registro);
                 }
             }
         }else{
             try(RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "rw")){
                 arq.setLength(0);
-                arq.writeInt(ultimoId); // Grava o último ID no arquivo original
-                conjunto2.getFirst().seek(0); // Vai para o início do primeiro arquivo temporário
+                arq.writeInt(ultimoId); 
+                conjunto2.getFirst().seek(0);
                 while(conjunto2.getFirst().getFilePointer() < conjunto2.getFirst().length()){
                     conjunto2.getFirst().readBoolean();
                     arq.writeBoolean(false);
-                    int tamRegistro = conjunto2.getFirst().readInt(); // Lê o tamanho do registro
-                    arq.writeInt(tamRegistro); // Grava o tamanho no arquivo original
-                    byte[] registro = new byte[tamRegistro]; 
-                    conjunto2.getFirst().read(registro); // Lê os dados do registro
-                    arq.write(registro); // Grava o registro no arquivo original
+                    int tamRegistro = conjunto2.getFirst().readInt();
+                    arq.writeInt(tamRegistro);
+                    byte[] registro = new byte[tamRegistro];
+                    conjunto2.getFirst().read(registro);
+                    arq.write(registro);
                 }
             }
         }
 
-        
-        // Apaga os arquivos temporários após a ordenação
+        // Apagar os arquivos temporários
         Path diretorio = Paths.get(nomeDir); 
 
         try {
-            apagarDiretorioRecursivo(diretorio); // Método para apagar arquivos temporários
+            apagarDiretorioRecursivo(diretorio);
             System.out.println("Diretório apagado com sucesso.");
         } catch (IOException e) {
             System.err.println("Erro ao apagar diretório: " + e.getMessage());
@@ -121,9 +111,6 @@ public class OrdenacaoExterna2 {
         
     }
 
-    //Método recursivo para apagar um diretório e seus arquivos
-
-    //CODIDO TESTE
     public static void apagarDiretorioRecursivo(Path diretorio) throws IOException {
         if (Files.exists(diretorio)) {
             try (Stream<Path> arquivos = Files.walk(diretorio)) {
@@ -137,34 +124,7 @@ public class OrdenacaoExterna2 {
                             } catch (IOException e) {
                                 System.err.println("Falha ao fechar " + path + ": " + e.getMessage());
                             }
-                            Thread.sleep(1000); // Espera 1 segundo
-                        }
-                        Files.delete(path); // Apaga o arquivo ou diretório
-                    } catch (IOException | InterruptedException e) {
-                        System.err.println("Falha ao apagar " + path + ": " + e.getMessage());
-                    }
-                });
-            }
-        } else {
-            System.out.println("Diretório não existe: " + diretorio);
-        }
-    }
-
-    /* CODIGO ANTIGO
-    public static void apagarDiretorioRecursivo(Path diretorio) throws IOException {
-        if (Files.exists(diretorio)) {
-            try (Stream<Path> arquivos = Files.walk(diretorio)) {
-                arquivos.sorted((path1, path2) -> -path1.compareTo(path2)) // Ordena para apagar arquivos antes de diretórios
-                .forEach(path -> {
-                    try {
-                        File file = path.toFile();
-                        if (file.isFile()) { // Verifica se é um arquivo antes de tentar fechar
-                            try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw")) {
-                                randomAccessFile.close();
-                            } catch (IOException e) {
-                                System.err.println("Falha ao fechar " + path + ": " + e.getMessage());
-                            }
-                            Thread.sleep(1000); // Espera 1 segundo
+                            Thread.sleep(10000); // Espera 1 segundo
                         }
                         Files.delete(path);
                     } catch (IOException | InterruptedException e) {
@@ -175,9 +135,8 @@ public class OrdenacaoExterna2 {
         } else {
             System.out.println("Diretório não existe: " + diretorio);
         }
-    }*/
+    }
 
-    //Método para ler sequencialmente registros do arquivo
     private static Movie lerSequencial(String filePath) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(filePath, "r")) {
             arq.seek(posicaoAtual); // Vai para a posição atual do arquivo
@@ -205,7 +164,7 @@ public class OrdenacaoExterna2 {
         }
     }
 
-    //Método para distribuir os registros em blocos ordenados nos arquivos temporários
+
     public List<RandomAccessFile> distribuirBlocosOrdenados(String filePath, String tempDir, int numRegistrosPorBloco, int numCaminhos) throws IOException {
         List<RandomAccessFile> tempFilesSet1 = new ArrayList<>();
            
@@ -225,9 +184,9 @@ public class OrdenacaoExterna2 {
             try {
                 filmes.clear();
                 for (int a = 0; a < numRegistrosPorBloco; a++) {
-                    Movie filme = lerSequencial(filePath); // Lê o próximo filme
+                    Movie filme = lerSequencial(filePath);
                     if (filme == null) {
-                        throw new EOFException(); // Fim do arquivo
+                        throw new EOFException();
                     }
                     filmes.add(filme);
                 }
@@ -238,9 +197,9 @@ public class OrdenacaoExterna2 {
                 // Gravar os grupos de m registros ordenados alternadamente nos arquivos temporários
                 for (Movie sortedMovie : filmes) {
                     byte[] filmeData = sortedMovie.toByteArray();
-                    tempFilesSet1.get(index % numCaminhos).writeBoolean(false);  // Marca como não deletado
-                    tempFilesSet1.get(index % numCaminhos).writeInt(filmeData.length); // Grava o tamanho
-                    tempFilesSet1.get(index % numCaminhos).write(filmeData); // Grava os dados
+                    tempFilesSet1.get(index % numCaminhos).writeBoolean(false);
+                    tempFilesSet1.get(index % numCaminhos).writeInt(filmeData.length);
+                    tempFilesSet1.get(index % numCaminhos).write(filmeData);
                     quantRegistrosValidos++;
                 }
                 index++;
@@ -257,19 +216,10 @@ public class OrdenacaoExterna2 {
 
                 break; // Fim do arquivo original
             }
-
-            //testandooo
-            // Fechar e deletar arquivos temporários
-           // for (RandomAccessFile file : tempFilesSet1) {
-              //  file.close();
-               // Files.deleteIfExists(Paths.get(file.getFD().toString()));
-            //}
-            
         }
         return tempFilesSet1; // Retornar os arquivos gerados para a intercalação
     }
 
-    //Método para realizar a intercalação balanceada
     public List<RandomAccessFile> intercalacaoBalanceada(List<RandomAccessFile> arquivosTemp1, List<RandomAccessFile> arquivosTemp2, int tamanhoBloco, int numCaminhos) throws IOException{
         boolean vazio = false;
         for(RandomAccessFile arquivo: arquivosTemp1){
@@ -344,7 +294,8 @@ public class OrdenacaoExterna2 {
                             arquivosTemp2.getFirst().writeBoolean(false);
                             arquivosTemp2.getFirst().writeInt(byteArray.length);  // Escreve o tamanho do registro
                             arquivosTemp2.getFirst().write(byteArray);  // Escreve o conteúdo do registro
-                        }       
+                        }
+                            
                     }
 
                     // Incrementa o contador de registros processados
@@ -375,17 +326,11 @@ public class OrdenacaoExterna2 {
                         }
                     }
                 }
+        
                 index++;
             }
-
-            //testandoo
-            // Fechar e deletar arquivos temporários do primeiro conjunto
-           // for (RandomAccessFile file : arquivosTemp1) {
-           //     file.close();
-            //    Files.deleteIfExists(Paths.get(file.getFD().toString()));
-            //}
-
         }
         return arquivosTemp2;
-    }    
+    }
+    
 }
