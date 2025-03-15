@@ -1,3 +1,5 @@
+package model;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -140,7 +142,8 @@ public class Movie {
     @Override
     public String toString() { // Transforma na String do CSV
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
-        return name + "," +
+        return id + "," + 
+        name + "," +
         sdf.format(releaseDate) + "," +
         String.format(Locale.US,"%.1f", score) + "," +
         listToString(genres) + "," +

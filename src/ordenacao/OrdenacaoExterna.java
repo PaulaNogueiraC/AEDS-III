@@ -1,5 +1,9 @@
+package ordenacao;
+
 import java.io.*;
 import java.util.*;
+
+import model.Movie;
 
 public abstract class OrdenacaoExterna {
 
@@ -18,9 +22,9 @@ public abstract class OrdenacaoExterna {
     }
 
     //Método principal para ordenar o arquivo usando a técnica de ordenação externa por intercalação balanceada
-    public static void ordenar(String caminhoArquivo, int numCaminhos, int numRegistrosPorBloco, TipoOrdenacao tipoOrdenacao ) throws IOException, InterruptedException {
-        // Resetar as variáveis estáticas no início do método
-        posicaoAtual = 4;
+    public void ordenar(String caminhoArquivo, int numCaminhos, int numRegistrosPorBloco, TipoOrdenacao tipoOrdenacao ) throws IOException, InterruptedException {
+
+        posicaoAtual = 4; 
         quantRegistrosValidos = 0;
 
         OrdenacaoExterna ordenador;
@@ -149,7 +153,7 @@ public abstract class OrdenacaoExterna {
         
     }
 
-    public static int contarDivisoes(int numero) {
+    private static int contarDivisoes(int numero) {
         int contador = 0;
         while (numero > 1) {
             numero = (int) Math.ceil((double) numero / 2);
@@ -160,7 +164,7 @@ public abstract class OrdenacaoExterna {
 
 
     //Método para ler sequencialmente registros do arquivo
-    private static Movie lerSequencial(String filePath) throws IOException {
+    private Movie lerSequencial(String filePath) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(filePath, "r")) {
             arq.seek(posicaoAtual); // Vai para a posição atual do arquivo
 
@@ -344,30 +348,4 @@ public abstract class OrdenacaoExterna {
         }
         return arquivosTemp2;
     }    
-}
-
-class OrdenacaoExternaPorId extends OrdenacaoExterna {
-
-    @Override
-    protected int compararFilmes(Movie filme1, Movie filme2) {
-        return filme1.getId() - filme2.getId();
-    }
-
-    @Override
-    protected void sortFilmes(List<Movie> filmes){
-        filmes.sort(Comparator.comparing(Movie::getId));
-    }
-}
-
-class OrdenacaoExternaPorData extends OrdenacaoExterna {
-
-    @Override
-    protected int compararFilmes(Movie filme1, Movie filme2) {
-        return filme1.getReleaseDate().compareTo(filme2.getReleaseDate());
-    }
-
-    @Override
-    protected void sortFilmes(List<Movie> filmes){
-        filmes.sort(Comparator.comparing(Movie::getReleaseDate));
-    }
 }
