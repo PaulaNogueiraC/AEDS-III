@@ -30,8 +30,9 @@ public class Main {
                 System.out.println("4. Atualizar filme pelo ID");
                 System.out.println("5. Deletar filme pelo ID");
                 System.out.println("6. Ordenacao Externa pelo ID");
-                System.out.println("7. Salvar no CSV");
-                System.out.println("8. Sair");
+                System.out.println("7. Ordenacao Externa por Data de lancamento");
+                System.out.println("8. Salvar no CSV");
+                System.out.println("9. Sair");
                 System.out.print("Escolha uma opcao: ");
                 opcao = scanner.nextInt();
                 scanner.nextLine();
@@ -46,7 +47,7 @@ public class Main {
                         scanner.nextLine();
                         Movie ler = lerFilme(id); // Ler um filme pelo ID
                         if(ler == null) System.out.println("Nao existe um filme com esse ID.");
-                        else System.out.println(ler.toString());
+                        else System.out.println(ler.getInfo());
                     }
                     case 4 -> {
                         System.out.print("\nID do filme: ");
@@ -62,23 +63,83 @@ public class Main {
                     }
                     case 6 -> {
                         //Lendo o numero de registro por blocos e o numero de caminhos a serem usados.
-                        System.out.print("\nNumero de caminhos: ");
-                        int numCaminhos = scanner.nextInt();
-                        scanner.nextLine();
-                        System.out.print("Numero de registros por bloco: ");
-                        int numRegistrosPorBloco = scanner.nextInt();
-                        scanner.nextLine();
-                        OrdenacaoExterna.ordenar(ARQ, numCaminhos, numRegistrosPorBloco); // Ordenar os filmes
+                        int numCaminhos = 0;
+                        boolean valido = false;
+                        System.out.print("\n");
+                        do {
+                            System.out.print("Numero de caminhos: ");
+                            try {
+                                numCaminhos = scanner.nextInt();  // Tenta ler um int
+                                valido = true;  // Se a entrada for válida, define valido como true
+                            } catch (InputMismatchException e) {
+                                // Caso não seja um int válido, exibe uma mensagem de erro
+                                System.out.println("Entrada invalida, tente novamente.");
+                                scanner.nextLine(); // Limpa o buffer do scanner
+                            }
+                        } while (!valido);
+                        scanner.nextLine(); // Consumir a linha vazia restante após nextInt()
+
+                        int numRegistrosPorBloco = 0;
+                        valido = false;
+                        do {
+                            System.out.print("Numero de registros por bloco: ");
+                            try {
+                                numRegistrosPorBloco = scanner.nextInt();  // Tenta ler um int
+                                valido = true;  // Se a entrada for válida, define valido como true
+                            } catch (InputMismatchException e) {
+                                // Caso não seja um int válido, exibe uma mensagem de erro
+                                System.out.println("Entrada invalida, tente novamente.");
+                                scanner.nextLine(); // Limpa o buffer do scanner
+                            }
+                        } while (!valido);
+                        scanner.nextLine(); // Consumir a linha vazia restante após nextInt()
+
+                        OrdenacaoExterna.ordenar(ARQ, numCaminhos, numRegistrosPorBloco, OrdenacaoExterna.TipoOrdenacao.ID);
                     }
                     case 7 -> {
-                        salvarNoCSV(); // Salvar as informações do arquivo binário que foi alterado no CSV
+                        //Lendo o numero de registro por blocos e o numero de caminhos a serem usados.
+                        int numCaminhos = 0;
+                        boolean valido = false;
+                        System.out.print("\n");
+                        do {
+                            System.out.print("Numero de caminhos: ");
+                            try {
+                                numCaminhos = scanner.nextInt();  // Tenta ler um int
+                                valido = true;  // Se a entrada for válida, define valido como true
+                            } catch (InputMismatchException e) {
+                                // Caso não seja um int válido, exibe uma mensagem de erro
+                                System.out.println("Entrada invalida, tente novamente.");
+                                scanner.nextLine(); // Limpa o buffer do scanner
+                            }
+                        } while (!valido);
+                        scanner.nextLine(); // Consumir a linha vazia restante após nextInt()
+
+                        int numRegistrosPorBloco = 0;
+                        valido = false;
+                        do {
+                            System.out.print("Numero de registros por bloco: ");
+                            try {
+                                numRegistrosPorBloco = scanner.nextInt();  // Tenta ler um int
+                                valido = true;  // Se a entrada for válida, define valido como true
+                            } catch (InputMismatchException e) {
+                                // Caso não seja um int válido, exibe uma mensagem de erro
+                                System.out.println("Entrada invalida, tente novamente.");
+                                scanner.nextLine(); // Limpa o buffer do scanner
+                            }
+                        } while (!valido);
+                        scanner.nextLine(); // Consumir a linha vazia restante após nextInt()
+                        
+                        OrdenacaoExterna.ordenar(ARQ, numCaminhos, numRegistrosPorBloco, OrdenacaoExterna.TipoOrdenacao.DATA);
                     }
                     case 8 -> {
+                        salvarNoCSV(); // Salvar as informações do arquivo binário que foi alterado no CSV
+                    }
+                    case 9 -> {
                         System.out.println("Saindo...");
                     }
                     default -> System.out.println("Opcao invalida!");
                 }
-            } while (opcao != 8);
+            } while (opcao != 9);
         } catch (InterruptedException ex) {
             System.out.println(ex.getMessage());
         }
@@ -179,29 +240,36 @@ public class Main {
         }
     }
 
+    // Lê o arquivo CSV e carrega os filmes para o banco de dados binário
     private static void carregarDoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "r");
         RandomAccessFile arqBin = new RandomAccessFile(ARQ, "rw")) {
-            // Lê o arquivo CSV e carrega os filmes para o banco de dados binário
             String linha;
             arqCSV.readLine();// Pular Cabeçalho
 
-            arqBin.seek(0);
-            ultimoId = arqBin.readInt();
+            int ultimoIdArquivo = 0;
+            if (arqBin.length() > 0) {
+                arqBin.seek(0);
+                ultimoIdArquivo = arqBin.readInt();
+            }
+            ultimoId = ultimoIdArquivo;
+
+            arqBin.seek(arqBin.length()); // Move o ponteiro para o final do arquivo
 
             while ((linha = arqCSV.readLine()) != null) {
                 Movie filme = lerLinhaCSV(linha); // Converte a linha CSV para um objeto Movie
                 if (filme != null) {
                     filme.setId(++ultimoId); 
-                    arqBin.seek(0);
-                    arqBin.writeInt(ultimoId); // Atualiza o último ID
-                    arqBin.seek(arqBin.length()); // Move o ponteiro para o final do arquivo
                     arqBin.writeBoolean(false); // Lápide que marca como não deletado
                     byte[] filmeData = filme.toByteArray();
                     arqBin.writeInt(filmeData.length); // Escreve o tamanho do filme
                     arqBin.write(filmeData); // Escreve os dados do filme
                 }
             }
+
+            // Atualiza o último ID no arquivo binário APÓS o loop
+            arqBin.seek(0);
+            arqBin.writeInt(ultimoId);
         }
     }
 

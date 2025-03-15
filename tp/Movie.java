@@ -141,14 +141,28 @@ public class Movie {
     public String toString() { // Transforma na String do CSV
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
         return name + "," +
-               sdf.format(releaseDate) + "," +
-               String.format(Locale.US,"%.1f", score) + "," +
-               listToString(genres) + "," +
-               "\"" + overview + "\"" + "," +
-               originalTitle.trim() + "," +
-               listToString(originalLanguage) + "," +
-               String.format(Locale.US,"%.1f", budget) + "," +
-               country.trim() + "\n";
+        sdf.format(releaseDate) + "," +
+        String.format(Locale.US,"%.1f", score) + "," +
+        listToString(genres) + "," +
+        "\"" + overview + "\"" + "," +
+        originalTitle.trim() + "," +
+        listToString(originalLanguage) + "," +
+        String.format(Locale.US,"%.1f", budget) + "," +
+        country.trim() + "\n";
+    }
+
+    public String getInfo() { // Escreve as informações do filme
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        return 
+        "Nome: " + name + "\n" +
+        "Data de lancamento (MM/dd/yyyy): " + sdf.format(releaseDate) + "\n" +
+        "Nota: " + String.format(Locale.US,"%.1f", score) + "\n" +
+        "Generos: " + listToString(genres) + "\n" +
+        "Resumo: " + overview + "\n" +
+        "Titulo Original: " + originalTitle.trim() + "\n" +
+        "Idiomas Originais: " + listToString(originalLanguage) + "\n" +
+        "Orcamento: " + String.format(Locale.US,"%.1f", budget) + "\n" +
+        "Pais: " + country.trim() + "\n";
     }
 
     public String listToString(List<String> lista){

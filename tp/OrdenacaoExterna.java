@@ -1,17 +1,38 @@
 import java.io.*;
 import java.util.*;
 
-public class OrdenacaoExterna {
+public abstract class OrdenacaoExterna {
 
     // Variáveis de controle de posição atual e número de registros válidos
     private static long posicaoAtual = 4; // Começa após o int inicial do último ID
     private static int quantRegistrosValidos = 0;
 
+    // Métodos abstratos para comparar e ordenar filmes
+    protected abstract int compararFilmes(Movie filme1, Movie filme2);
+    protected abstract void sortFilmes(List<Movie> filmes);
+
+    //Enum para definir quais critérios de ordenacao podem ser usados
+    public enum TipoOrdenacao {
+        ID,
+        DATA
+    }
+
     //Método principal para ordenar o arquivo usando a técnica de ordenação externa por intercalação balanceada
-    public static void ordenar(String caminhoArquivo, int numCaminhos, int numRegistrosPorBloco ) throws IOException, InterruptedException {
+    public static void ordenar(String caminhoArquivo, int numCaminhos, int numRegistrosPorBloco, TipoOrdenacao tipoOrdenacao ) throws IOException, InterruptedException {
+        // Resetar as variáveis estáticas no início do método
+        posicaoAtual = 4;
+        quantRegistrosValidos = 0;
+
+        OrdenacaoExterna ordenador;
+        if (tipoOrdenacao == TipoOrdenacao.ID) {
+            ordenador = new OrdenacaoExternaPorId();
+            System.out.println("Ordenando por Id");
+        } else {
+            ordenador = new OrdenacaoExternaPorData();
+            System.out.println("Ordenando por data");
+        }
 
         int ultimoId;
-
         // Abertura do arquivo original para leitura
         try (RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "r")) {
             arq.seek(0); // Vai para o início do arquivo
@@ -29,7 +50,7 @@ public class OrdenacaoExterna {
         }
 
         // Distribui os registros ordenados nos arquivos temporários
-        List<RandomAccessFile> conjunto1 = distribuirBlocosOrdenados(caminhoArquivo, tempFilesSet1, numRegistrosPorBloco, numCaminhos);
+        List<RandomAccessFile> conjunto1 = ordenador.distribuirBlocosOrdenados(caminhoArquivo, tempFilesSet1, numRegistrosPorBloco, numCaminhos);
 
         //  Criar mais numCaminhos arquivos temporários
         List<RandomAccessFile> conjunto2 = new ArrayList<>();
@@ -49,13 +70,13 @@ public class OrdenacaoExterna {
         for(int contador = 0; contador < chamadas; contador++){
             // Alterna entre os conjuntos de arquivos para realizar a intercalação
             if(contador % 2 == 0){
-                conjunto2 = intercalacaoBalanceada(conjunto1, conjunto2, numRegistrosPorBloco, numCaminhos, vezes);
+                conjunto2 = ordenador.intercalacaoBalanceada(conjunto1, conjunto2, numRegistrosPorBloco, numCaminhos, vezes);
                 for (int j = 0; j < numCaminhos; j++) {
                     conjunto1.get(j).setLength(0);
                 }
             }
             else{
-                conjunto1 = intercalacaoBalanceada(conjunto2, conjunto1, numRegistrosPorBloco, numCaminhos, vezes);
+                conjunto1 = ordenador.intercalacaoBalanceada(conjunto2, conjunto1, numRegistrosPorBloco, numCaminhos, vezes);
                 for (int j = 0; j < numCaminhos; j++) {
                     conjunto2.get(j).setLength(0);
                 }
@@ -79,6 +100,7 @@ public class OrdenacaoExterna {
                     conjunto1.getFirst().read(registro); // Lê os dados do registro
                     arq.write(registro); // Grava o registro no arquivo original
                 }
+                arq.close();
             }
         }else{
             try(RandomAccessFile arq = new RandomAccessFile(caminhoArquivo, "rw")){
@@ -94,6 +116,7 @@ public class OrdenacaoExterna {
                     conjunto2.getFirst().read(registro); // Lê os dados do registro
                     arq.write(registro); // Grava o registro no arquivo original
                 }
+                arq.close();
             }
         }
 
@@ -101,11 +124,13 @@ public class OrdenacaoExterna {
         for (int i = 0; i < conjunto1.size(); i++) {
             RandomAccessFile file = conjunto1.get(i);
             file.close();
+            System.out.println("Fechando: temp_" + i + ".db");
         }
 
         for (int i = 0; i < conjunto2.size(); i++) {
             RandomAccessFile file = conjunto2.get(i);
             file.close();
+            System.out.println("Fechando: temp2_" + i + ".db");
         }
         
         //Apagar arquivos temporários
@@ -114,12 +139,12 @@ public class OrdenacaoExterna {
 
         for (int i = 0; i < conjunto1.size(); i++) {
             File tempFile = new File("temp_" + i + ".db");
-            tempFile.delete();
+            System.out.println("Deletando: " + tempFile.getAbsolutePath() + " -> " + tempFile.delete());
         }
 
         for (int i = 0; i < conjunto2.size(); i++) {
             File tempFile = new File("temp2_" + i + ".db");
-            tempFile.delete();
+            System.out.println("Deletando: " + tempFile.getAbsolutePath() + " -> " + tempFile.delete());
         }
         
     }
@@ -163,25 +188,17 @@ public class OrdenacaoExterna {
     }
 
     //Método para distribuir os registros em blocos ordenados nos arquivos temporários
-    public static List<RandomAccessFile> distribuirBlocosOrdenados(String filePath, List<RandomAccessFile> tempFilesSet1, int numRegistrosPorBloco, int numCaminhos) throws IOException {
+    public List<RandomAccessFile> distribuirBlocosOrdenados(String filePath, List<RandomAccessFile> tempFilesSet1, int numRegistrosPorBloco, int numCaminhos) throws IOException {
 
         int index = 0;
         List<Movie> filmes = new ArrayList<>();
-
+        Movie filme;
         // Ler registros de m em m registros, ordenar em memória e distribuir nos arquivos temporários
-        while (true) {
-            try {
-                filmes.clear();
-                for (int a = 0; a < numRegistrosPorBloco; a++) {
-                    Movie filme = lerSequencial(filePath); // Lê o próximo filme
-                    if (filme == null) {
-                        throw new EOFException(); // Fim do arquivo
-                    }
-                    filmes.add(filme);
-                }
-
-                // Ordenar os registros em memória principal por ID
-                filmes.sort(Comparator.comparing(Movie::getId));
+        while ((filme = lerSequencial(filePath)) != null) {
+            filmes.add(filme);
+            if (filmes.size() == numRegistrosPorBloco) {
+                // Ordenar os registros em memória principal pelo critério definido
+                sortFilmes(filmes);
 
                 // Gravar os grupos de m registros ordenados alternadamente nos arquivos temporários
                 for (Movie sortedMovie : filmes) {
@@ -191,27 +208,26 @@ public class OrdenacaoExterna {
                     tempFilesSet1.get(index % numCaminhos).write(filmeData); // Grava os dados
                     quantRegistrosValidos++;
                 }
+                filmes.clear();
                 index++;
-            } catch (EOFException e) {
-                // Gravar o último bloco que é menor
-                filmes.sort(Comparator.comparing(Movie::getId));
-                for (Movie sortedMovie : filmes) {
-                    byte[] filmeData = sortedMovie.toByteArray();
-                    tempFilesSet1.get(index % numCaminhos).writeBoolean(false);
-                    tempFilesSet1.get(index % numCaminhos).writeInt(filmeData.length);
-                    tempFilesSet1.get(index % numCaminhos).write(filmeData);
-                    quantRegistrosValidos++;
-                }
-
-                break; // Fim do arquivo original
-            }
-            
+            } 
+        }
+        if (!filmes.isEmpty()) {
+            // Gravar o último bloco, se houver
+            sortFilmes(filmes);
+            for (Movie sortedMovie : filmes) {
+                byte[] filmeData = sortedMovie.toByteArray();
+                tempFilesSet1.get(index % numCaminhos).writeBoolean(false);
+                tempFilesSet1.get(index % numCaminhos).writeInt(filmeData.length);
+                tempFilesSet1.get(index % numCaminhos).write(filmeData);
+                quantRegistrosValidos++;
+            }      
         }
         return tempFilesSet1; // Retornar os arquivos gerados para a intercalação
     }
 
     //Método para realizar a intercalação balanceada
-    public static List<RandomAccessFile> intercalacaoBalanceada(List<RandomAccessFile> arquivosTemp1, List<RandomAccessFile> arquivosTemp2, int tamanhoBloco, int numCaminhos, int vezes) throws IOException{
+    public List<RandomAccessFile> intercalacaoBalanceada(List<RandomAccessFile> arquivosTemp1, List<RandomAccessFile> arquivosTemp2, int tamanhoBloco, int numCaminhos, int vezes) throws IOException{
         boolean vazio = false;
         for(RandomAccessFile arquivo: arquivosTemp1){
             if(arquivo.length() == 0){
@@ -253,13 +269,14 @@ public class OrdenacaoExterna {
                 
                 }
 
-                while (true) {
+                boolean algumRegistroValido = true;
+                while (algumRegistroValido) {
                     int minIndex = -1;
                     Movie minMovie = null;
                 
-                    // Encontrar o Movie com menor ID
+                    // Encontrar o "menor" Movie de acordo com o critério definido
                     for (int i = 0; i < movies.size(); i++) {
-                        if (movies.get(i) != null && (minMovie == null || movies.get(i).getId() < minMovie.getId())) {
+                        if (movies.get(i) != null && (minMovie == null || compararFilmes(movies.get(i), minMovie) < 0)) {
                             minMovie = movies.get(i);
                             minIndex = i;
                         }
@@ -285,7 +302,7 @@ public class OrdenacaoExterna {
                         }       
                     }
 
-                    // Incrementa o contador de registros processados
+                    // Incrementa o contador de registros processados do arquivo com o elemento menor
                     recordCounts.set(minIndex, recordCounts.get(minIndex) + 1);
                 
                     // Verificar se já processamos tamanhoBlocos registros para esse arquivo
@@ -293,7 +310,7 @@ public class OrdenacaoExterna {
                         movies.set(minIndex, null);  // Descartar mais registros desse arquivo
                     } else {
                         // Ler próximo Movie do arquivo correspondente
-                        RandomAccessFile file = arquivosTemp1.get(minIndex);  // Usando diretamente arquivosTemp1
+                        RandomAccessFile file = arquivosTemp1.get(minIndex);  
                         file.seek(filePointers.get(minIndex));  // Move o ponteiro para a próxima posição
                         if (file.getFilePointer() < file.length()) {
                             file.readBoolean();
@@ -312,6 +329,14 @@ public class OrdenacaoExterna {
                             movies.set(minIndex, null);  // Arquivo vazio, remove o Movie
                         }
                     }
+                    // Verificar se ainda há algum registro válido
+                    algumRegistroValido = false;
+                    for (Movie movie : movies) {
+                        if (movie != null) {
+                            algumRegistroValido = true;
+                            break;
+                        }
+                    }
                 }
                 index++;
             }
@@ -319,4 +344,30 @@ public class OrdenacaoExterna {
         }
         return arquivosTemp2;
     }    
+}
+
+class OrdenacaoExternaPorId extends OrdenacaoExterna {
+
+    @Override
+    protected int compararFilmes(Movie filme1, Movie filme2) {
+        return filme1.getId() - filme2.getId();
+    }
+
+    @Override
+    protected void sortFilmes(List<Movie> filmes){
+        filmes.sort(Comparator.comparing(Movie::getId));
+    }
+}
+
+class OrdenacaoExternaPorData extends OrdenacaoExterna {
+
+    @Override
+    protected int compararFilmes(Movie filme1, Movie filme2) {
+        return filme1.getReleaseDate().compareTo(filme2.getReleaseDate());
+    }
+
+    @Override
+    protected void sortFilmes(List<Movie> filmes){
+        filmes.sort(Comparator.comparing(Movie::getReleaseDate));
+    }
 }
