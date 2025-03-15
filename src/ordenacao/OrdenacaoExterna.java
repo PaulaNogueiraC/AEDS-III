@@ -281,14 +281,14 @@ public abstract class OrdenacaoExterna {
 
     /**
      * Realiza a intercalação balanceada de arquivos temporários contendo registros de filmes.
-     * O método lê os registros dos arquivos temporários de entrada, intercalando-os de forma ordenada 
-     * e grava no arquivo de saída, de acordo com o número de vezes especificado para o processo de intercalação.
+     * O método lê os registros do promeiro conjunto de arquivos temporários de entrada, intercalando-os de forma ordenada 
+     * e grava no segundo conjunto de arquivos temporários arquivo de saída, de acordo com o número de vezes especificado para o processo de intercalação.
      *
      * @param arquivosTemp1 A lista de arquivos temporários de entrada com os registros a serem intercalados.
      * @param arquivosTemp2 A lista de arquivos temporários de saída onde os registros intercalados serão armazenados.
      * @param tamanhoBloco O número de registros que serão processados por bloco.
      * @param numCaminhos O número de arquivos temporários de saída.
-     * @param vezes O número de vezes que a intercalação deve ser realizada. 
+     * @param vezes O número de vezes que a intercalação deve ser realizada por chamada do método.
      * @return A lista de arquivos temporários de saída contendo os registros intercalados.
      * @throws IOException Se ocorrer algum erro na leitura ou escrita dos arquivos.
      */
