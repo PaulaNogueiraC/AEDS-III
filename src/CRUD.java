@@ -8,9 +8,12 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Scanner;
-
 import model.Movie;
 
+/**
+ * A classe CRUD fornece métodos para realizar operações de CRUD (Criar, Ler, Atualizar, Deletar)
+ * sobre um arquivo binário que armazena informações de filmes.
+ */
 public class CRUD {
     private static final String ARQ = "../dataset/imdb_movies.db"; // Arquivo binário para armazenamento dos filmes
     private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy"); // Formato de data
@@ -18,6 +21,11 @@ public class CRUD {
 
     private CRUD(){} //Construtor privado para impedir instanciações
 
+    /**
+     * Inicializa o último ID utilizado ao ler o arquivo binário.
+     * 
+     * @throws IOException Se ocorrer algum erro de leitura/escrita no arquivo.
+     */
     public static void inicializaUltimoId() throws IOException {
         // Se o arquivo binário não estiver vazio, lê o último ID utilizado
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
@@ -30,6 +38,12 @@ public class CRUD {
         }
     }
 
+    /**
+     * Adiciona um novo filme no arquivo binário.
+     * 
+     * @param scanner O scanner utilizado para capturar a entrada do usuário.
+     * @throws IOException Se ocorrer algum erro de leitura/escrita no arquivo.
+     */
     public static void adicionarFilme(Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
 
@@ -114,7 +128,13 @@ public class CRUD {
         }
     }
 
-    // Método para ler um filme
+    /**
+     * Lê os dados de um filme a partir de seu ID no arquivo binário.
+     * 
+     * @param id O ID do filme a ser lido.
+     * @return O objeto {@link Movie} correspondente ao ID, ou {@code null} se o filme não for encontrado.
+     * @throws IOException Se ocorrer algum erro de leitura no arquivo.
+     */
     public static Movie lerFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "r")) {
             arq.seek(0);
@@ -143,7 +163,13 @@ public class CRUD {
         }
     }
 
-    // Método para alterar um filme
+    /**
+     * Altera os dados de um filme existente no arquivo binário.
+     * 
+     * @param id O ID do filme a ser alterado.
+     * @param scanner O scanner utilizado para capturar a entrada do usuário.
+     * @throws IOException Se ocorrer algum erro de leitura/escrita no arquivo.
+     */
     public static void alterarFilme(int id, Scanner scanner) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);
@@ -274,7 +300,12 @@ public class CRUD {
             }
     }
 
-    // Método para deletar um filme
+    /**
+     * Deleta um filme do arquivo binário, marcando-o como deletado.
+     * 
+     * @param id O ID do filme a ser deletado.
+     * @throws IOException Se ocorrer algum erro de leitura/escrita no arquivo.
+     */
     public static void deletarFilme(int id) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "rw")) {
             arq.seek(0);

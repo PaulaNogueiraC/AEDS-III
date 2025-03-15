@@ -5,15 +5,21 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-
 import model.Movie;
 
+/**
+ * Classe responsável por manipular arquivos CSV e binários para armazenamento e recuperação de filmes.
+ */
 public class CSVHandler {
     private static final String ARQ = "../dataset/imdb_movies.db"; // Arquivo binário para armazenamento dos filmes
     private static final String CSV = "../dataset/imdb_movies.csv"; // Arquivo csv para armazenamento dos filmes
     private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy"); // Formato de data
 
-    // Lê o arquivo CSV e carrega os filmes para o banco de dados binário
+    /**
+     * Lê o arquivo CSV e carrega os filmes para o banco de dados binário.
+     *
+     * @throws IOException Se ocorrer um erro na leitura/escrita dos arquivos.
+     */
     public  static void carregarDoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "r");
         RandomAccessFile arqBin = new RandomAccessFile(ARQ, "rw")) {
@@ -45,6 +51,12 @@ public class CSVHandler {
         }
     }
 
+    /**
+     * Converte uma linha do CSV em um objeto Movie.
+     *
+     * @param linha Linha do arquivo CSV contendo os dados do filme.
+     * @return Objeto Movie representando os dados lidos.
+     */
     private static Movie lerLinhaCSV(String linha) {
 
         // Converte a linha do CSV para um objeto Movie
@@ -63,7 +75,12 @@ public class CSVHandler {
         
     }
 
-    // Método para converter uma string no formato MM/dd/yyyy para Date
+    /**
+     * Converte uma string no formato MM/dd/yyyy para um objeto Date.
+     *
+     * @param releaseDateString String representando a data de lançamento.
+     * @return Objeto Date correspondente ou null se a conversão falhar.
+     */
     public static Date releaseDateFromString(String releaseDateString) {
         try {
             Date data = sdf.parse(releaseDateString); // Converte a string para Date
@@ -74,7 +91,11 @@ public class CSVHandler {
         return null;
     }
 
-    // Método para salvar um filme no arquivo CSV
+    /**
+     * Salva os filmes armazenados no arquivo binário de volta para o arquivo CSV.
+     *
+     * @throws IOException Se ocorrer um erro na leitura/escrita dos arquivos.
+     */
     public static void salvarNoCSV() throws IOException {
         try (RandomAccessFile arqCSV = new RandomAccessFile(CSV, "rw");
              RandomAccessFile arqBin = new RandomAccessFile(ARQ, "r")) { // Abre os arquivos uma vez

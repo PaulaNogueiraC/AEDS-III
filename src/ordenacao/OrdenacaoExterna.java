@@ -2,26 +2,54 @@ package ordenacao;
 
 import java.io.*;
 import java.util.*;
-
 import model.Movie;
 
+/**
+ * Classe abstrata responsável pela implementação da ordenação externa por intercalação balanceada.
+ * Contém os métodos para realizar a ordenação de registros de filmes de forma eficiente, sem carregar todos os dados na memória de uma vez.
+ */
 public abstract class OrdenacaoExterna {
 
     // Variáveis de controle de posição atual e número de registros válidos
     private static long posicaoAtual = 4; // Começa após o int inicial do último ID
     private static int quantRegistrosValidos = 0;
 
-    // Métodos abstratos para comparar e ordenar filmes
+    /**
+     * Método abstrato para comparar dois filmes de acordo com o critério de ordenação implementado.
+     * 
+     * @param filme1 O primeiro filme a ser comparado.
+     * @param filme2 O segundo filme a ser comparado.
+     * @return Um valor negativo, zero ou positivo dependendo do resultado da comparação entre os filmes.
+     */
     protected abstract int compararFilmes(Movie filme1, Movie filme2);
+    
+    /**
+     * Método abstrato para ordenar a lista de filmes de acordo com o critério de ordenação implementado.
+     * 
+     * @param filmes A lista de filmes a ser ordenada.
+     */
     protected abstract void sortFilmes(List<Movie> filmes);
 
-    //Enum para definir quais critérios de ordenacao podem ser usados
+    /**
+     * Enum que define os tipos de ordenação disponíveis.
+     * Pode ser por ID ou por data.
+     */
     public enum TipoOrdenacao {
         ID,
         DATA
     }
 
-    //Método principal para ordenar o arquivo usando a técnica de ordenação externa por intercalação balanceada
+    /**
+     * Método principal para ordenar o arquivo utilizando a técnica de ordenação externa por intercalação balanceada.
+     * O método distribui os registros nos arquivos temporários e realiza a intercalação balanceada até que os registros estejam ordenados.
+     * 
+     * @param caminhoArquivo O caminho do arquivo que contém os dados dos filmes.
+     * @param numCaminhos O número de arquivos temporários a serem utilizados durante o processo de ordenação.
+     * @param numRegistrosPorBloco O número de registros a serem armazenados em cada bloco.
+     * @param tipoOrdenacao O critério de ordenação a ser utilizado (por ID ou por data).
+     * @throws IOException Se ocorrer um erro durante a leitura ou escrita nos arquivos.
+     * @throws InterruptedException Se a execução for interrompida durante o processo.
+     */
     public void ordenar(String caminhoArquivo, int numCaminhos, int numRegistrosPorBloco, TipoOrdenacao tipoOrdenacao ) throws IOException, InterruptedException {
 
         posicaoAtual = 4; 
@@ -153,6 +181,12 @@ public abstract class OrdenacaoExterna {
         
     }
 
+    /**
+     * Método auxiliar para contar o número de divisões necessárias para processar todos os registros.
+     * 
+     * @param numero O número total de registros.
+     * @return O número de divisões necessárias.
+     */
     private static int contarDivisoes(int numero) {
         int contador = 0;
         while (numero > 1) {
@@ -163,7 +197,13 @@ public abstract class OrdenacaoExterna {
     }
 
 
-    //Método para ler sequencialmente registros do arquivo
+    /**
+     * Método para ler registros sequencialmente de um arquivo.
+     * 
+     * @param filePath O caminho do arquivo a ser lido.
+     * @return Um objeto Movie contendo os dados do registro lido ou null se não houver mais registros.
+     * @throws IOException Se ocorrer um erro ao ler o arquivo.
+     */
     private Movie lerSequencial(String filePath) throws IOException {
         try (RandomAccessFile arq = new RandomAccessFile(filePath, "r")) {
             arq.seek(posicaoAtual); // Vai para a posição atual do arquivo
@@ -191,7 +231,16 @@ public abstract class OrdenacaoExterna {
         }
     }
 
-    //Método para distribuir os registros em blocos ordenados nos arquivos temporários
+    /**
+     * Método para distribuir os registros em blocos ordenados nos arquivos temporários.
+     * 
+     * @param filePath O caminho do arquivo que contém os dados dos filmes.
+     * @param tempFilesSet1 A lista de arquivos temporários onde os registros serão armazenados.
+     * @param numRegistrosPorBloco O número de registros a serem armazenados em cada bloco.
+     * @param numCaminhos O número de arquivos temporários disponíveis.
+     * @return A lista de arquivos temporários onde os registros foram armazenados.
+     * @throws IOException Se ocorrer um erro ao ler ou escrever nos arquivos.
+     */
     public List<RandomAccessFile> distribuirBlocosOrdenados(String filePath, List<RandomAccessFile> tempFilesSet1, int numRegistrosPorBloco, int numCaminhos) throws IOException {
 
         int index = 0;
@@ -230,7 +279,19 @@ public abstract class OrdenacaoExterna {
         return tempFilesSet1; // Retornar os arquivos gerados para a intercalação
     }
 
-    //Método para realizar a intercalação balanceada
+    /**
+     * Realiza a intercalação balanceada de arquivos temporários contendo registros de filmes.
+     * O método lê os registros dos arquivos temporários de entrada, intercalando-os de forma ordenada 
+     * e grava no arquivo de saída, de acordo com o número de vezes especificado para o processo de intercalação.
+     *
+     * @param arquivosTemp1 A lista de arquivos temporários de entrada com os registros a serem intercalados.
+     * @param arquivosTemp2 A lista de arquivos temporários de saída onde os registros intercalados serão armazenados.
+     * @param tamanhoBloco O número de registros que serão processados por bloco.
+     * @param numCaminhos O número de arquivos temporários de saída.
+     * @param vezes O número de vezes que a intercalação deve ser realizada. 
+     * @return A lista de arquivos temporários de saída contendo os registros intercalados.
+     * @throws IOException Se ocorrer algum erro na leitura ou escrita dos arquivos.
+     */
     public List<RandomAccessFile> intercalacaoBalanceada(List<RandomAccessFile> arquivosTemp1, List<RandomAccessFile> arquivosTemp2, int tamanhoBloco, int numCaminhos, int vezes) throws IOException{
         boolean vazio = false;
         for(RandomAccessFile arquivo: arquivosTemp1){

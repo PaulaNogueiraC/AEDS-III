@@ -1,12 +1,16 @@
 import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
-
 import model.Movie;
 import ordenacao.OrdenacaoExterna;
 import ordenacao.OrdenacaoExternaPorData;
 import ordenacao.OrdenacaoExternaPorId;
 
+/**
+ * Classe principal que gerencia a execução do programa de manipulação de filmes.
+ * Possui um menu interativo para carregar, adicionar, ler, atualizar, deletar e ordenar filmes,
+ * além de salvar e carregar filmes do CSV.
+ */
 public class Main {
     private static final String ARQ = "../dataset/imdb_movies.db"; // Arquivo binário para armazenamento dos filmes
     public static void main(String[] args) throws IOException {
