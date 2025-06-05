@@ -110,6 +110,5 @@ public class ControllerCompressao {
         System.out.println("  Tempo de execucao: " + huffmanTempo + " ms");
         System.out.println("LZW:");
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
-    
     }
 }

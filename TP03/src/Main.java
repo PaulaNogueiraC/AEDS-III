@@ -1,3 +1,7 @@
+import arvore.ArvoreBMais;
+import casamento.KMP;
+import compressao.ControllerCompressao;
+import hash.HashExtensivel;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -5,10 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
-
-import arvore.ArvoreBMais;
-import compressao.ControllerCompressao;
-import hash.HashExtensivel;
 import listaInvertida.ListaInvertidaArvoreBMais;
 import model.Movie;
 import model.RegistroArvore;
@@ -64,6 +64,7 @@ public class Main {
                 System.out.println("10. Ordenacao Externa por Data de lancamento");
                 System.out.println("11. Comprimir arquivo de dados");
                 System.out.println("12. Descomprimir versao do arquivo de dados");
+                System.out.println("15. Achar padrao com KMP");
                 System.out.println("13. Salvar no CSV");
                 System.out.println("14. Sair");
                 System.out.print("Escolha uma opcao: ");
@@ -83,6 +84,7 @@ public class Main {
                     case 10 -> processarOrdenacaoPorData();
                     case 11 -> ControllerCompressao.comprimir();
                     case 12 -> processarDescompressao(scanner);
+                    case 15 -> KMP.main(new String[0]);
                     case 13 -> CSVHandler.salvarNoCSV(); // Salvar as informações do arquivo binário que foi alterado no CSV
                     case 14 -> System.out.println("Saindo...");
                     default -> System.out.println("Opcao invalida!");
