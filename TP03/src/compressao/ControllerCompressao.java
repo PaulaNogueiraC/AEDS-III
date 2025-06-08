@@ -1,7 +1,10 @@
 package compressao;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -38,7 +41,8 @@ public class ControllerCompressao {
         long huffmanFim = System.currentTimeMillis();
         long huffmanTempo = huffmanFim - huffmanInicio;
         long huffmanTamFinal = Files.size(Paths.get(caminhoDestinoH));
-        float huffmanPercentual = (1 - ((float) huffmanTamFinal / tamInicial)) * 100;
+        float huffmanTaxa = ((float) huffmanTamFinal / tamInicial);
+        float huffmanPercentual = (1 - huffmanTaxa) * 100;
 
 
         long lzwInicio = System.currentTimeMillis();
@@ -51,7 +55,8 @@ public class ControllerCompressao {
         long lzwFim = System.currentTimeMillis();
         long lzwTempo = lzwFim - lzwInicio;
         long lzwTamFinal = Files.size(Paths.get(caminhoDestinoLZW));
-        float lzwPercentual = (1 - ((float) lzwTamFinal / tamInicial)) * 100;
+        float lzwTaxa = ((float) lzwTamFinal / tamInicial);
+        float lzwPercentual = (1 - lzwTaxa) * 100;
 
         System.out.println("Arquivo comprimido com sucesso!");
         System.out.println("Resultados da compressao:");
@@ -61,11 +66,13 @@ public class ControllerCompressao {
         System.out.println("Huffman:");
         System.out.println("  Tempo de execucao: " + huffmanTempo + " ms");
         System.out.println("  Tamanho comprimido: " + huffmanTamFinal + " bytes");
+        System.out.printf("  Taxa de Compressao: %.2f%%\n", huffmanTaxa);
         System.out.printf("  Percentual de Reducao: %.2f%%\n", huffmanPercentual);
         System.out.println();
         System.out.println("LZW:");
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
         System.out.println("  Tamanho comprimido: " + lzwTamFinal + " bytes");
+        System.out.printf("  Taxa de Compressao: %.2f%%\n", lzwTaxa);
         System.out.printf("  Percentual de Reducao: %.2f%%\n", lzwPercentual);
         System.out.println("--------------------------------------------------------");
     }
@@ -81,9 +88,9 @@ public class ControllerCompressao {
             throw new IOException("Versão LZW " + versao + " não encontrada!");
         }
 
-        // Criar arquivos temporários para os resultados
-        String tempHuffman = DADOS + ".huffman.temp";
-        String tempLZW = DADOS + ".lzw.temp";
+        // Criar arquivos para os resultados
+        String tempHuffman = "../resultadosDescompressao/imdb_movies.db.huffman" + versao;
+        String tempLZW = "../resultadosDescompressao/imdb_movies.db.lzw" + versao;
 
         long huffmanInicio = System.currentTimeMillis();
         try (RandomAccessFile origem = new RandomAccessFile(caminhoOrigemH, "r");
@@ -110,5 +117,17 @@ public class ControllerCompressao {
         System.out.println("  Tempo de execucao: " + huffmanTempo + " ms");
         System.out.println("LZW:");
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
+
+        try (FileInputStream fis = new FileInputStream(tempLZW);
+            FileOutputStream fos = new FileOutputStream(DADOS);
+            FileChannel sourceChannel = fis.getChannel();
+            FileChannel destChannel = fos.getChannel()) {
+            
+            destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+            System.out.println("Arquivo copiado com sucesso!");
+        } catch (Exception e) {
+            System.err.println("Erro ao copiar arquivo: " + e.getMessage());
+        }
+    
     }
 }

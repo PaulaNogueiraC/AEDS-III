@@ -9,12 +9,13 @@
  */
 package model;
 
-import arvore.RegistroArvoreBMais;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+
+import arvore.RegistroArvoreBMais;
 
 public class RegistroLista implements RegistroArvoreBMais<RegistroLista> {
     private String chave;    
