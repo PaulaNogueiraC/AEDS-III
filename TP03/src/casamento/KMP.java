@@ -8,90 +8,84 @@ import java.util.List;
 public class KMP {
 
     public static List<Long> pesquisar(RandomAccessFile arquivo, String padraoTexto) throws IOException {
-        String padraoBinario = textoParaBinario(padraoTexto);
-        return pesquisarBinario(arquivo, padraoBinario);
+        byte[] padraoBytes = padraoTexto.getBytes(); // Converte o padrão para bytes
+        return pesquisarBytes(arquivo, padraoBytes);
     }
 
-    private static List<Long> pesquisarBinario(RandomAccessFile arquivo, String padraoBinario) throws IOException {
+    private static List<Long> pesquisarBytes(RandomAccessFile arquivo, byte[] padrao) throws IOException {
         List<Long> ocorrencias = new ArrayList<>();
-        int[][] dfa = construirDFA(padraoBinario);
-        int M = padraoBinario.length();
-        long arquivoLength = arquivo.length();
+        int[] falha = montarVetorFalha(padrao); // Calcula o vetor da função de falha 
+        int M = padrao.length;
+        int N = (int) arquivo.length();
         byte[] buffer = new byte[8192]; // Buffer de 8KB
-        long posicaoGlobal = 0;
-        StringBuilder janelaBinaria = new StringBuilder();
 
-        while (posicaoGlobal < arquivoLength) {
+        long posicaoGlobal = 0;
+        int j = 0; // Índice para o padrão
+
+        while (posicaoGlobal < N) {
             arquivo.seek(posicaoGlobal);
             int bytesRead = arquivo.read(buffer);
             if (bytesRead == -1) break;
 
-            // Converte os bytes lidos para string binária
-            String blocoBinario = bytesParaBinario(buffer, bytesRead);
-            janelaBinaria.append(blocoBinario);
-
-            // Processa a janela acumulada
-            List<Integer> posicoes = kmpSearch(janelaBinaria.toString(), padraoBinario, dfa);
-            for (int pos : posicoes) {
-                ocorrencias.add(posicaoGlobal + pos / 8L); // Converte posição binária para posição em bytes
+            for (int k = 0; k < bytesRead; k++) {
+                while (j > 0 && buffer[k] != padrao[j]) {
+                    j = falha[j - 1];
+                }
+                if (buffer[k] == padrao[j]) {
+                    j++;
+                }
+                if (j == M) {
+                    // Calcula a posição do início do padrão
+                    long posicaoEncontrada = posicaoGlobal + k - M + 1;
+                    ocorrencias.add(posicaoEncontrada);
+                    j = falha[j - 1]; // Reinicia para encontrar outras ocorrências
+                }
             }
-
-            // Mantém apenas o final que pode ter sobreposição com o próximo bloco
-            int manter = Math.min(M - 1, janelaBinaria.length());
-            janelaBinaria = new StringBuilder(janelaBinaria.substring(janelaBinaria.length() - manter));
             posicaoGlobal += bytesRead;
-        }
-
-        return ocorrencias;
-    }
-
-    private static int[][] construirDFA(String padrao) {
-        int R = 2; // Alfabeto binário
-        int M = padrao.length();
-        int[][] dfa = new int[R][M];
-        dfa[padrao.charAt(0) - '0'][0] = 1;
-        
-        for (int X = 0, j = 1; j < M; j++) {
-            for (int c = 0; c < R; c++) {
-                dfa[c][j] = dfa[c][X];
-            }
-            dfa[padrao.charAt(j) - '0'][j] = j + 1;
-            X = dfa[padrao.charAt(j) - '0'][X];
-        }
-        return dfa;
-    }
-
-    private static List<Integer> kmpSearch(String texto, String padrao, int[][] dfa) {
-        List<Integer> ocorrencias = new ArrayList<>();
-        int M = padrao.length();
-        int N = texto.length();
-        int i = 0, j = 0;
-
-        while (i < N) {
-            j = dfa[texto.charAt(i) - '0'][j];
-            i++;
             
-            if (j == M) {
-                ocorrencias.add(i - M);
-                j = 0; // Reinicia para encontrar todas as ocorrências
+            // Tratamento para padrões que cruzam blocos
+            if (j > 0) {
+                arquivo.seek(posicaoGlobal - j);
+                byte[] overlap = new byte[j];
+                arquivo.read(overlap);
+                for (int k = 0; k < j; k++) {
+                    while (j > 0 && overlap[k] != padrao[j]) {
+                        j = falha[j - 1];
+                    }
+                    if (overlap[k] == padrao[j]) {
+                        j++;
+                    }
+                    if (j == M) {
+                        long posicaoEncontrada = posicaoGlobal - j + k - M + 1;
+                        ocorrencias.add(posicaoEncontrada);
+                        j = falha[j - 1];
+                    }
+                }
             }
         }
         return ocorrencias;
     }
 
-    private static String textoParaBinario(String texto) {
-        StringBuilder binario = new StringBuilder();
-        for (char c : texto.toCharArray()) {
-            binario.append(String.format("%8s", Integer.toBinaryString(c)).replace(' ', '0'));
+    // Calcula a tabela falha para o padrão
+    private static int[] montarVetorFalha(byte[] padrao) {
+        int[] falha = new int[padrao.length];
+        int len = 0;
+        int i = 1;
+        
+        while (i < padrao.length) {
+            if (padrao[i] == padrao[len]) {
+                len++;
+                falha[i] = len;
+                i++;
+            } else {
+                if (len != 0) {
+                    len = falha[len - 1];
+                } else {
+                    falha[i] = 0;
+                    i++;
+                }
+            }
         }
-        return binario.toString();
-    }
-
-    private static String bytesParaBinario(byte[] bytes, int length) {
-        StringBuilder binario = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            binario.append(String.format("%8s", Integer.toBinaryString(bytes[i] & 0xFF)).replace(' ', '0'));
-        }
-        return binario.toString();
+        return falha;
     }
 }

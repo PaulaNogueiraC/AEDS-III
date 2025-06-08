@@ -8,7 +8,6 @@ import java.util.Set;
 
 import arvore.ArvoreBMais;
 import compressao.ControllerCompressao;
-import compressao.Huffman;
 import hash.HashExtensivel;
 import listaInvertida.ListaInvertidaArvoreBMais;
 import model.Movie;
@@ -111,7 +110,7 @@ public class Main {
 
     private static int lerOpcao(Scanner scanner) {
         while (!scanner.hasNextInt()) {
-            System.out.println("Entrada inválida! Digite um número.");
+            System.out.println("Entrada invalida! Digite um número.");
             scanner.next();
         }
         int opcao = scanner.nextInt();
@@ -135,7 +134,7 @@ public class Main {
             case 2 -> CRUD.lerFilmeArvore(id); // Buscar filme por id usando busca no índice de Árvore B+
             case 3 -> CRUD.lerFilmeHash(id); // Buscar filme por id usando busca no índice de Hash Extensível
             default -> {
-                System.out.println("Método de busca inválido!");
+                System.out.println("Metodo de busca inválido!");
                 yield null;
             }
         };
@@ -151,7 +150,7 @@ public class Main {
             case 1 -> CRUD.alterarFilme(id, scanner); // Alterar filme por id usando busca sequencial
             case 2 -> CRUD.alterarFilmeArvore(id, scanner); // Alterar filme por id usando busca no índice de Árvore B+
             case 3 -> CRUD.alterarFilmeHash(id, scanner); // Alterar filme por id usando busca no índice de Hash Extensível
-            default -> System.out.println("Método de busca inválido!");
+            default -> System.out.println("Metodo de busca inválido!");
         }
     }
 
@@ -165,7 +164,7 @@ public class Main {
             case 1 -> CRUD.deletarFilme(id); // Deletar filme por id usando busca sequencial
             case 2 -> CRUD.deletarFilmeArvore(id); // Deletar filme por id usando busca no índice de Árvore B+
             case 3 -> CRUD.deletarFilmeHash(id); // Deletar filme por id usando busca no índice de Hash Extensível
-            default -> System.out.println("Método de busca inválido!");
+            default -> System.out.println("Metodo de busca inválido!");
         }
     }
 
@@ -201,7 +200,7 @@ public class Main {
      * @throws IOException Se ocorrer erro de leitura no arquivo
      */
     private static void buscarFilmesPorTitulo(Scanner scanner) throws IOException {
-        System.out.print("\nDigite o título ou termos para buscar: ");
+        System.out.print("\nDigite o titulo ou termos para buscar: ");
         String busca = scanner.nextLine().toLowerCase();
         
         if (busca.isEmpty()) {
@@ -295,10 +294,10 @@ public class Main {
      * @throws IOException Se ocorrer erro de leitura no arquivo
      */
     private static void buscarFilmesPorTituloEPais(Scanner scanner) throws IOException {
-        System.out.print("\nDigite termos para buscar no título: ");
+        System.out.print("\nDigite termos para buscar no titulo: ");
         String buscaTitulo = scanner.nextLine().toLowerCase();
         
-        System.out.print("Digite termos para buscar no país: ");
+        System.out.print("Digite termos para buscar no pais: ");
         String buscaPais = scanner.nextLine().toLowerCase();
         
         if (buscaTitulo.isEmpty() && buscaPais.isEmpty()) {
@@ -344,7 +343,7 @@ public class Main {
         }
         
         if (resultadosFinais.isEmpty()) {
-            System.out.println("Nenhum filme encontrado com os critérios especificados.");
+            System.out.println("Nenhum filme encontrado com os criterios especificados.");
         } else {
             System.out.println("\n" + resultadosFinais.size() + " filmes encontrados:");
             for (Movie filme : resultadosFinais) {
@@ -358,27 +357,26 @@ public class Main {
         System.out.print("\nVersao: ");
         int versao = lerOpcao(scanner);
         ControllerCompressao.descomprimir(versao);
-        CSVHandler.atualizarIndices();
     }
 
     private static void processarBuscaKMP(Scanner scanner) throws IOException {
-        System.out.print("\nDigite o padrão: ");
+        System.out.print("\nDigite o padrao: ");
         String padraoTexto = scanner.nextLine();
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "r")) {
             List<Long> posicoes = KMP.pesquisar(arq, padraoTexto);
             for (long pos : posicoes) {
-                System.out.println("Encontrado na posição: " + pos);
+                System.out.println("Encontrado na posicao: " + pos);
             }
         }
     }
 
     private static void processarBuscaBM(Scanner scanner) throws IOException {
-        System.out.print("\nDigite o padrão: ");
+        System.out.print("\nDigite o padrao: ");
         String padraoTexto = scanner.nextLine();
         try (RandomAccessFile arq = new RandomAccessFile(ARQ, "r")) {
             List<Long> posicoes = BoyerMoore.pesquisar(arq, padraoTexto);
             for (long pos : posicoes) {
-                System.out.println("Encontrado na posição: " + pos);
+                System.out.println("Encontrado na posicao: " + pos);
             }
         }
     }
@@ -389,7 +387,7 @@ public class Main {
         try {
             arvore = new ArvoreBMais<>(RegistroArvore.class.getConstructor(), 5, ARQ_ARVORE); // Ordem 5 nesse caso
         } catch (Exception e) {
-            System.out.println("Erro ao inicializar Árvore B+: " + e.getMessage());
+            System.out.println("Erro ao inicializar Arvore B+: " + e.getMessage());
         }
         CRUD.setArvore(arvore); 
         CSVHandler.setArvore(arvore); 
@@ -398,7 +396,7 @@ public class Main {
         try {
             hash = new HashExtensivel<>(RegistroHash.class.getConstructor(), 500, ARQ_HASH_DIR, ARQ_HASH_BUCKET); // Criando a hash com os buckets com no máximo 500 elementos
         } catch (Exception e) {
-            System.out.println("Erro ao inicializar Hash Extensível: " + e.getMessage());
+            System.out.println("Erro ao inicializar Hash Extensivel: " + e.getMessage());
         }
         CRUD.setHashTable(hash); 
         CSVHandler.setHashTable(hash); 
@@ -428,14 +426,14 @@ public class Main {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ_ARVORE, "rw")){
             arq.setLength(0);
         } catch (IOException e) { 
-            System.out.println("Erro ao limpar Árvore B+: " + e.getMessage());
+            System.out.println("Erro ao limpar Arvore B+: " + e.getMessage());
         }
 
         // Limpar a tabela hash (índice direto)
         try (RandomAccessFile arq = new RandomAccessFile(ARQ_HASH_DIR, "rw")){
             arq.setLength(0);
         } catch (IOException e) { 
-            System.out.println("Erro ao limpar Diretório Hash: " + e.getMessage());
+            System.out.println("Erro ao limpar Diretorio Hash: " + e.getMessage());
         }
         try (RandomAccessFile arq = new RandomAccessFile(ARQ_HASH_BUCKET, "rw")){
             arq.setLength(0);
@@ -447,14 +445,14 @@ public class Main {
         try (RandomAccessFile arq = new RandomAccessFile(ARQ_LISTA_TITULO, "rw")){
             arq.setLength(0);
         } catch (IOException e) { 
-            System.out.println("Erro ao limpar Lista Invertida Título: " + e.getMessage());
+            System.out.println("Erro ao limpar Lista Invertida Titulo: " + e.getMessage());
         }
 
         // Limpar a lista invertida de pais (índice invertido)
         try (RandomAccessFile arq = new RandomAccessFile(ARQ_LISTA_PAIS, "rw")){
             arq.setLength(0);
         } catch (IOException e) { 
-            System.out.println("Erro ao limpar Lista Invertida País: " + e.getMessage());
+            System.out.println("Erro ao limpar Lista Invertida Pais: " + e.getMessage());
         }
     }
 

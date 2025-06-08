@@ -12,7 +12,7 @@ import model.NoHuffman;
 
 public class Huffman {
 
-    private static final int TAM_BUFFER = 1024;
+    private static final int TAM_BUFFER = 262144;
 
     public static void comprime(RandomAccessFile origem, RandomAccessFile destino) throws IOException {
         
@@ -35,20 +35,24 @@ public class Huffman {
 			sequenciaDeBits.append(codigos.get((byte) byteLido));
 		}
 
-		for (int i = 0; i < sequenciaDeBits.length(); i += 8) {
-			String byteStr;
-			if (i + 8 > sequenciaDeBits.length()) {
-				byteStr = sequenciaDeBits.substring(i);
-				while (byteStr.length() < 8) {
-					byteStr += "0";
-				}
-			} else {
-				byteStr = sequenciaDeBits.substring(i, i + 8);
-			}
-			
-			int valorByte = Integer.parseInt(byteStr, 2);
-			destino.write(valorByte);
-		}
+		// Calcula quantos bits de padding são necessários para completar o último byte
+        int bitsRestantes = sequenciaDeBits.length() % 8;
+        if (bitsRestantes != 0) {
+            int bitsParaCompletar = 8 - bitsRestantes;
+            for (int i = 0; i < bitsParaCompletar; i++) {
+                sequenciaDeBits.append("0"); // Adiciona zeros para completar o byte
+            }
+        }
+
+		// Cria um array de bytes para a escrita final, evitando conversões repetidas
+        byte[] bytesParaEscrever = new byte[sequenciaDeBits.length() / 8];
+        for (int i = 0; i < sequenciaDeBits.length(); i += 8) {
+            String byteStr = sequenciaDeBits.substring(i, i + 8);
+            bytesParaEscrever[i / 8] = (byte) Integer.parseInt(byteStr, 2);
+        }
+
+        // Escreve todos os bytes de uma vez usando o buffer
+        destino.write(bytesParaEscrever);
     }
 
     private static NoHuffman construirArvoreHuffman(HashMap<Byte, Integer> frequencias){

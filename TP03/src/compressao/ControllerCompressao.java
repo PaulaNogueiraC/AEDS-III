@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -66,13 +65,13 @@ public class ControllerCompressao {
         System.out.println("Huffman:");
         System.out.println("  Tempo de execucao: " + huffmanTempo + " ms");
         System.out.println("  Tamanho comprimido: " + huffmanTamFinal + " bytes");
-        System.out.printf("  Taxa de Compressao: %.2f%%\n", huffmanTaxa);
+        System.out.printf("  Taxa de Compressao: %.2f\n", huffmanTaxa);
         System.out.printf("  Percentual de Reducao: %.2f%%\n", huffmanPercentual);
         System.out.println();
         System.out.println("LZW:");
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
         System.out.println("  Tamanho comprimido: " + lzwTamFinal + " bytes");
-        System.out.printf("  Taxa de Compressao: %.2f%%\n", lzwTaxa);
+        System.out.printf("  Taxa de Compressao: %.2f\n", lzwTaxa);
         System.out.printf("  Percentual de Reducao: %.2f%%\n", lzwPercentual);
         System.out.println("--------------------------------------------------------");
     }
@@ -82,11 +81,11 @@ public class ControllerCompressao {
         String caminhoOrigemLZW = DIR_LZW + PREFIX_LZW + versao;
         
         if (!Files.exists(Paths.get(caminhoOrigemH))) {
-            throw new IOException("Versão Huffman " + versao + " não encontrada!");
+            throw new IOException("Versao" + versao + " nao encontrada!");
         }
-        if (!Files.exists(Paths.get(caminhoOrigemLZW))) {
-            throw new IOException("Versão LZW " + versao + " não encontrada!");
-        }
+
+        // Criar diretório se não existir
+        Files.createDirectories(Paths.get("../resultadosDescompressao/"));
 
         // Criar arquivos para os resultados
         String tempHuffman = "../resultadosDescompressao/imdb_movies.db.huffman" + versao;
@@ -119,15 +118,18 @@ public class ControllerCompressao {
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
 
         try (FileInputStream fis = new FileInputStream(tempLZW);
-            FileOutputStream fos = new FileOutputStream(DADOS);
-            FileChannel sourceChannel = fis.getChannel();
-            FileChannel destChannel = fos.getChannel()) {
+            FileOutputStream fos = new FileOutputStream(DADOS)) {
             
-            destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = fis.read(buffer)) > 0) {
+                fos.write(buffer, 0, length);
+            }
             System.out.println("Arquivo copiado com sucesso!");
         } catch (Exception e) {
             System.err.println("Erro ao copiar arquivo: " + e.getMessage());
+            e.printStackTrace();
         }
-    
+            
     }
 }
