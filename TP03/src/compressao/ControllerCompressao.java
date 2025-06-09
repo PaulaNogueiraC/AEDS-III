@@ -4,9 +4,17 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Classe controladora responsável por gerenciar as operações de compressão e descompressão
+ * utilizando os algoritmos Huffman e LZW. Oferece funcionalidades para:
+ * - Comprimir arquivos e gerar estatísticas de desempenho
+ * - Descomprimir arquivos previamente comprimidos
+ * - Gerenciar versões dos arquivos comprimidos
+ */
 public class ControllerCompressao {
     private static final String DADOS = "../dataset/imdb_movies.db";
     private static final String DIR_HUFFMAN = "../arquivosComprimidos/huffman/";
@@ -14,6 +22,16 @@ public class ControllerCompressao {
     private static final String DIR_LZW = "../arquivosComprimidos/lzw/";
     private static final String PREFIX_LZW = "imdb_moviesLZWCompressao";
     
+    /**
+     * Realiza a compressão do arquivo de dados utilizando ambos os algoritmos (Huffman e LZW).
+     * Gera arquivos comprimidos em diretórios específicos com numeração sequencial.
+     * Calcula e exibe métricas de desempenho incluindo:
+     * - Tempo de execução
+     * - Tamanho do arquivo comprimido
+     * - Taxa e percentual de compressão
+     * 
+     * @throws IOException Se ocorrer erro durante leitura/escrita dos arquivos
+     */
     public static void comprimir() throws IOException {
         // Criar diretórios se não existirem
         Files.createDirectories(Paths.get(DIR_HUFFMAN));
@@ -57,8 +75,7 @@ public class ControllerCompressao {
         float lzwTaxa = ((float) lzwTamFinal / tamInicial);
         float lzwPercentual = (1 - lzwTaxa) * 100;
 
-        System.out.println("Arquivo comprimido com sucesso!");
-        System.out.println("Resultados da compressao:");
+        System.out.println("\nResultados da compressao:");
         System.out.println("----------------------------------------------------");
         System.out.println("Tamanho original: " + tamInicial + " bytes");
         System.out.println();
@@ -76,6 +93,14 @@ public class ControllerCompressao {
         System.out.println("--------------------------------------------------------");
     }
     
+    /**
+     * Descomprime arquivos previamente comprimidos em uma versão específica.
+     * Substitui o arquivo de dados pelo resultado da descompressão. 
+     * Exibe métricas de desempenho para comparar a descompressão por Huffman e LZW.
+     * 
+     * @param versao Número da versão dos arquivos comprimidos que será descomprimida
+     * @throws IOException Se a versão especificada não existir ou ocorrer erro na operação
+     */
     public static void descomprimir(int versao) throws IOException {
         String caminhoOrigemH = DIR_HUFFMAN + PREFIX_HUFFMAN + versao;
         String caminhoOrigemLZW = DIR_LZW + PREFIX_LZW + versao;
@@ -111,24 +136,22 @@ public class ControllerCompressao {
 
         // Mostrar resultados
         System.out.println("\nResultados da descompressao (versao " + versao + "):");
-        System.out.println("----------------------------------------");
+        System.out.println("----------------------------------------------");
         System.out.println("Huffman:");
         System.out.println("  Tempo de execucao: " + huffmanTempo + " ms");
         System.out.println("LZW:");
         System.out.println("  Tempo de execucao: " + lzwTempo + " ms");
+        System.out.println("----------------------------------------------");
 
+        // Copiar o resultado da descompressão para o arquivo de dados
         try (FileInputStream fis = new FileInputStream(tempLZW);
-            FileOutputStream fos = new FileOutputStream(DADOS)) {
+            FileOutputStream fos = new FileOutputStream(DADOS);
+            FileChannel sourceChannel = fis.getChannel();
+            FileChannel destChannel = fos.getChannel()) {
             
-            byte[] buffer = new byte[8192];
-            int length;
-            while ((length = fis.read(buffer)) > 0) {
-                fos.write(buffer, 0, length);
-            }
-            System.out.println("Arquivo copiado com sucesso!");
+            destChannel.transferFrom(sourceChannel, 0, sourceChannel.size());
         } catch (Exception e) {
             System.err.println("Erro ao copiar arquivo: " + e.getMessage());
-            e.printStackTrace();
         }
             
     }

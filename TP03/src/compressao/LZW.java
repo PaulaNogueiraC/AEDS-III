@@ -3,13 +3,29 @@ package compressao;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+/**
+ * Classe que implementa o algoritmo de compressão LZW.
+ * 
+ * O LZW é um algoritmo de compressão sem perdas que funciona construindo um dicionário
+ * dinâmico de sequências de bytes encontradas no arquivo. Ele substitui sequências
+ * repetidas por códigos de tamanho fixo (12 bits por padrão), resultando em uma
+ * compactação eficiente para dados com repetições.
+*/
 public class LZW {
 
     public static final int BITS_POR_INDICE = 12;
     private static final int MAX_DICIONARIO = 1 << BITS_POR_INDICE; // 4096
 
+    /**
+     * Comprime um arquivo usando o algoritmo LZW.
+     * 
+     * @param origem Arquivo de origem a ser comprimido
+     * @param destino Arquivo de destino onde será gravado o resultado comprimido
+     * @throws IOException Se ocorrer erro durante a leitura/escrita dos arquivos
+     */
     public static void comprime(RandomAccessFile origem, RandomAccessFile destino) throws IOException {
         // Lê todos os bytes de 'origem' em memória
         byte[] entrada = new byte[(int) origem.length()];
@@ -22,6 +38,13 @@ public class LZW {
         destino.write(comprimido);
     }
 
+    /**
+     * Descomprime um arquivo previamente comprimido com LZW.
+     * 
+     * @param origem Arquivo comprimido a ser descomprimido
+     * @param destino Arquivo de destino para os dados descomprimidos
+     * @throws IOException Se ocorrer erro durante a leitura/escrita dos arquivos
+     */
     public static void descomprime(RandomAccessFile origem, RandomAccessFile destino) throws IOException {
         // Lê todos os bytes comprimidos de 'origem' em memória
         byte[] dadosComprimidos = new byte[(int) origem.length()];
@@ -34,16 +57,24 @@ public class LZW {
         destino.write(descomprimido);
     }
 
+    /**
+     * Codifica um array de bytes usando o algoritmo LZW.
+     * 
+     * @param entrada Array de bytes a ser comprimido
+     * @return Array de bytes comprimido
+     */
     private static byte[] codifica(byte[] entrada) {
-        // Inicializa dicionário: todos os possíveis valores para bytes (8 bits), vai de 0 a 255
-        String[] dicio = new String[MAX_DICIONARIO];
-        HashMap<String, Integer> mapaDicionario = new HashMap<>();
+        /* Inicializa dicionário com os 256 valores possíveis de 1 byte (0-255)
+         * Usa ISO_8859_1 para garantir mapeamento 1:1 entre bytes e caracteres,
+         * evitando problemas com codificações multi-byte como UTF-8 */
+        String[] dict = new String[MAX_DICIONARIO];
+        HashMap<String, Integer> mapa = new HashMap<>();
 
         for (int i = 0; i < 256; i++) {
-            dicio[i] = "" + (char) i;
-            mapaDicionario.put(dicio[i], i);
+            dict[i] = new String(new byte[]{(byte)i}, StandardCharsets.ISO_8859_1); 
+            mapa.put(dict[i], i);
         }
-        int dicioSize = 256;
+        int dictSize = 256;
 
         // Array para guardar os índices gerados
         int[] indices = new int[entrada.length]; // no pior caso, haverá no máximo entrada.length códigos
@@ -51,24 +82,24 @@ public class LZW {
 
         String w = "";
         for (byte b : entrada) {
-            char c = (char) (b & 0xFF);
+            String c = new String(new byte[]{b}, StandardCharsets.ISO_8859_1);
             String wc = w + c;
-            if (mapaDicionario.containsKey(wc)) {
+            if (mapa.containsKey(wc)) {
                 w = wc;
             } else {
                 // Codifica w
-                indices[indiceCount++] = mapaDicionario.get(w);
+                indices[indiceCount++] = mapa.get(w);
                 // Se ainda houver espaço no dicionário, adiciona wc
-                if (dicioSize < MAX_DICIONARIO) {
-                    dicio[dicioSize] = wc;
-                    mapaDicionario.put(wc, dicioSize++);
+                if (dictSize < MAX_DICIONARIO) {
+                    dict[dictSize] = wc;
+                    mapa.put(wc, dictSize++);
                 }
                 w = "" + c;
             }
         }
         // Se restou alguma string em w, codifica também
         if (!w.isEmpty()) {
-            indices[indiceCount++] = mapaDicionario.get(w);
+            indices[indiceCount++] = mapa.get(w);
         }
 
         // Agora convertemos a lista de índices em uma sequência de bytes, 
@@ -92,7 +123,7 @@ public class LZW {
             }
         }
 
-        // Se sobrar bits no buffer, preenchemos o último byte 
+        // Se sobrar bits no buffer, preenchemos o último byte à esquerda
         if (bitsNoBuffer > 0) {
             saida[posByte] = (byte) ((buffer << (8 - bitsNoBuffer)) & 0xFF);
         }
@@ -100,13 +131,21 @@ public class LZW {
         return saida;
     }
 
+    /**
+     * Decodifica um array de bytes comprimido com LZW.
+     * 
+     * @param entrada Array de bytes comprimido
+     * @return Array de bytes descomprimido
+     */
     private static byte[] decodifica(byte[] entrada) {
-        // Inicializa dicionário para decodificação
-        String[] dicio = new String[MAX_DICIONARIO];
+        /* Inicializa dicionário com os 256 valores possíveis de 1 byte (0-255)
+         * Usa ISO_8859_1 para garantir mapeamento 1:1 entre bytes e caracteres,
+         * evitando problemas com codificações multi-byte como UTF-8 */
+        String[] dict = new String[MAX_DICIONARIO];
         for (int i = 0; i < 256; i++) {
-            dicio[i] = "" + (char) i;
+            dict[i] = new String(new byte[]{(byte)i}, StandardCharsets.ISO_8859_1);
         }
-        int dicioSize = 256;
+        int dictSize = 256;
 
         // Primeira etapa: extrair os índices (códigos) da sequência de bytes
         int capacidadeMaxIndices = (entrada.length * 8) / BITS_POR_INDICE + 1;
@@ -130,24 +169,24 @@ public class LZW {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         // Recupera a primeira palavra
-        String w = dicio[indices[0]];
-        baos.write(w.getBytes(), 0, w.length());
+        String w = dict[indices[0]];
+        baos.write(w.getBytes(StandardCharsets.ISO_8859_1), 0, w.length());
 
         for (int i = 1; i < indiceCount; i++) {
             int k = indices[i];
             String entry;
-            if (k < dicioSize) {
-                entry = dicio[k];
+            if (k < dictSize) {
+                entry = dict[k];
             } else {
                 // Caso especial: padrão w + primeiro caractere de w
-                entry = w + w.charAt(0);
+                entry = w + new String(new byte[]{(byte)w.charAt(0)}, StandardCharsets.ISO_8859_1);
             }
             // Escreve 'entry' no output
-            baos.write(entry.getBytes(), 0, entry.length());
+            baos.write(entry.getBytes(StandardCharsets.ISO_8859_1), 0, entry.length());
 
             // Adiciona ao dicionário (se ainda houver espaço)
-            if (dicioSize < MAX_DICIONARIO) {
-                dicio[dicioSize++] = w + entry.charAt(0);
+            if (dictSize < MAX_DICIONARIO) {
+                dict[dictSize++] = w + entry.charAt(0);
             }
             w = entry;
         }

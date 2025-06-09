@@ -1,5 +1,16 @@
 package model;
 
+/**
+ * Classe que representa um nó da árvore de Huffman.
+ * 
+ * Cada nó armazena um byte (dado), sua frequência no texto original
+ * e referências para os nós filhos esquerdo e direito. Esta classe é
+ * fundamental para a construção da árvore de Huffman usada no algoritmo
+ * de compressão.
+ * 
+ * Implementa a interface Comparable para permitir a ordenação dos nós
+ * por frequência, necessária para a construção da árvore.
+ */
 public class NoHuffman implements Comparable<NoHuffman> {
     private Byte data;
     private int frequencia;
@@ -12,11 +23,11 @@ public class NoHuffman implements Comparable<NoHuffman> {
     }
 
     public NoHuffman(NoHuffman esquerdo, NoHuffman direito) {
-		this.esquerdo = esquerdo;
-		this.direito = direito;
-		this.frequencia = esquerdo.frequencia + direito.frequencia;
+        this.esquerdo = esquerdo;
+        this.direito = direito;
+        this.frequencia = esquerdo.frequencia + direito.frequencia;
         this.data = null;
-	}
+    }
 
     public Byte getData() {
         return data;
@@ -51,8 +62,8 @@ public class NoHuffman implements Comparable<NoHuffman> {
     }
 
     public boolean folha() {
-		return esquerdo == null && direito == null;
-	}
+       return esquerdo == null && direito == null;
+    }
 
     @Override
     public int compareTo(NoHuffman outro) {

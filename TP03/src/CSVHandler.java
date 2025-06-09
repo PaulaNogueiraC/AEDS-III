@@ -1,5 +1,3 @@
-import arvore.ArvoreBMais;
-import hash.HashExtensivel;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.ParseException;
@@ -8,6 +6,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import arvore.ArvoreBMais;
+import hash.HashExtensivel;
 import listaInvertida.ListaInvertidaArvoreBMais;
 import model.Movie;
 import model.RegistroArvore;
@@ -58,7 +59,7 @@ public class CSVHandler {
 
     /**
      * Define a instância da Lista invertida que será utilizada como índice invertido
-     * para as operações de busca.
+     * de título para as operações de busca.
      * 
      * @param listaIndice A instância de Lista Invertida
      */
@@ -68,7 +69,7 @@ public class CSVHandler {
 
     /**
      * Define a instância da Lista invertida que será utilizada como índice invertido
-     * para as operações de busca.
+     * de país para as operações de busca.
      * 
      * @param listaIndice A instância de Lista Invertida
      */

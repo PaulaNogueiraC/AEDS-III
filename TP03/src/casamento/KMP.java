@@ -5,13 +5,35 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Classe que implementa o algoritmo Knuth-Morris-Pratt (KMP) para busca de padrões em arquivos.
+ * O algoritmo é eficiente para busca de padrões em textos grandes, utilizando um vetor de falha
+ * para evitar comparações desnecessárias, melhorando o desempenho em relação a abordagens como 
+ * a de força bruta.
+ */
 public class KMP {
 
+    /**
+     * Pesquisa um padrão em um arquivo usando o algoritmo KMP.
+     * 
+     * @param arquivo O arquivo onde o padrão será buscado (RandomAccessFile).
+     * @param padraoTexto O padrão a ser buscado (String).
+     * @return Lista de posições (long) onde o padrão foi encontrado no arquivo.
+     * @throws IOException Se ocorrer um erro de leitura do arquivo.
+     */
     public static List<Long> pesquisar(RandomAccessFile arquivo, String padraoTexto) throws IOException {
         byte[] padraoBytes = padraoTexto.getBytes(); // Converte o padrão para bytes
         return pesquisarBytes(arquivo, padraoBytes);
     }
 
+    /**
+     * Método interno que realiza a busca do padrão (em bytes) no arquivo usando KMP.
+     * 
+     * @param arquivo O arquivo onde o padrão será buscado (RandomAccessFile).
+     * @param padrao O padrão a ser buscado (byte[]).
+     * @return Lista de posições (long) onde o padrão foi encontrado.
+     * @throws IOException Se ocorrer um erro de leitura do arquivo.
+     */
     private static List<Long> pesquisarBytes(RandomAccessFile arquivo, byte[] padrao) throws IOException {
         List<Long> ocorrencias = new ArrayList<>();
         int[] falha = montarVetorFalha(padrao); // Calcula o vetor da função de falha 
@@ -66,7 +88,13 @@ public class KMP {
         return ocorrencias;
     }
 
-    // Calcula a tabela falha para o padrão
+    /**
+     * Calcula o vetor de falha (também chamado de "tabela de prefixos") para o padrão.
+     * Este vetor é usado pelo algoritmo KMP para pular comparações desnecessárias.
+     * 
+     * @param padrao O padrão a ser analisado (byte[]).
+     * @return Vetor de falha (int[]) contendo os índices para recomeçar a comparação.
+     */
     private static int[] montarVetorFalha(byte[] padrao) {
         int[] falha = new int[padrao.length];
         int len = 0;

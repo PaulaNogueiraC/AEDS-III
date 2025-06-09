@@ -7,6 +7,8 @@ import java.util.Scanner;
 import java.util.Set;
 
 import arvore.ArvoreBMais;
+import casamento.BoyerMoore;
+import casamento.KMP;
 import compressao.ControllerCompressao;
 import hash.HashExtensivel;
 import listaInvertida.ListaInvertidaArvoreBMais;
@@ -16,9 +18,7 @@ import model.RegistroHash;
 import model.RegistroLista;
 import ordenacao.OrdenacaoExterna;
 import ordenacao.OrdenacaoExternaPorData;
-import ordenacao.OrdenacaoExternaPorId;
-import casamento.BoyerMoore; 
-import casamento.KMP; 
+import ordenacao.OrdenacaoExternaPorId; 
 
 
 /**
@@ -31,7 +31,18 @@ import casamento.KMP;
  *   3. Busca usando Tabela Hash Extensível como índice
  * - Busca em lista invertida por um termo do título ou pelo país ou pelos dois ao mesmo tempo.
  * - Ordenação externa por ID ou data de lançamento
- * - Persistência dos dados em arquivo binário
+ * - Operações de compressão:
+ *   1. Comprimir arquivo de dados usando algoritmos Huffman e LZW
+ *   2. Descomprimir versões anteriores
+ * - Busca de padrões:
+ *   1. Usando algoritmo KMP
+ *   2. Usando algoritmo Boyer-Moore
+ * - Persistência dos dados em arquivo binário com índices para otimização
+ * 
+ * A classe gerencia vários tipos de índices para otimizar as operações:
+ * - Índice usando Árvore B+
+ * - Índice usando Tabela Hash Extensível
+ * - Índices invertidos (listas invertidas) para título e país
  */
 public class Main {
     private static final String ARQ = "../dataset/imdb_movies.db"; // Arquivo binário para armazenamento dos filmes
@@ -86,7 +97,7 @@ public class Main {
                     case 8 -> buscarFilmesPorTituloEPais(scanner);
                     case 9 -> processarOrdenacaoPorID();
                     case 10 -> processarOrdenacaoPorData();
-                    case 11 -> ControllerCompressao.comprimir();
+                    case 11 -> ControllerCompressao.comprimir(); // Comprimir o arquivo de dados usando Huffman e LZW
                     case 12 -> processarDescompressao(scanner);
                     case 13 -> processarBuscaKMP(scanner);
                     case 14 -> processarBuscaBM(scanner);
@@ -100,6 +111,9 @@ public class Main {
         } 
     }
 
+    /**
+     * Exibe o submenu de opções de busca (sequencial, árvore B+, hash).
+     */
     private static void exibirSubmenu() {
         System.out.println("\nOpcoes de Busca:");
         System.out.println("1. Busca sequencial");
@@ -108,6 +122,12 @@ public class Main {
         System.out.print("Escolha o metodo de busca: ");
     }
 
+    /**
+     * Lê uma opção numérica do usuário através do scanner.
+     * 
+     * @param scanner Objeto Scanner para leitura da entrada
+     * @return A opção numérica digitada pelo usuário
+     */
     private static int lerOpcao(Scanner scanner) {
         while (!scanner.hasNextInt()) {
             System.out.println("Entrada invalida! Digite um número.");
@@ -118,6 +138,12 @@ public class Main {
         return opcao;
     }
 
+    /**
+     * Processa a operação de leitura de filme usando o método de busca selecionado.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de leitura nos arquivos
+     */
     private static void processarOperacaoLeitura(Scanner scanner) throws IOException {
         exibirSubmenu();
         int metodoBusca = lerOpcao(scanner);
@@ -128,6 +154,14 @@ public class Main {
         if (filme != null) System.out.println(filme.getInfo());
     }
 
+    /**
+     * Busca um filme usando o método especificado.
+     * 
+     * @param metodo Método de busca (1-sequencial, 2-árvore B+, 3-hash)
+     * @param id ID do filme a ser buscado
+     * @return O filme encontrado ou null se não existir
+     * @throws IOException Se ocorrer erro de leitura nos arquivos
+     */
     private static Movie buscarFilmePorMetodo(int metodo, int id) throws IOException{
         return switch (metodo) {
             case 1 -> CRUD.lerFilme(id); // Buscar filme por id sequencialmente
@@ -140,6 +174,12 @@ public class Main {
         };
     }
 
+    /**
+     * Processa a operação de atualização de filme usando o método de busca selecionado.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     */
     private static void processarOperacaoAtualizacao(Scanner scanner) throws IOException {
         exibirSubmenu();
         int metodoBusca = lerOpcao(scanner);
@@ -154,6 +194,12 @@ public class Main {
         }
     }
 
+    /**
+     * Processa a operação de exclusão de filme usando o método de busca selecionado.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     */
     private static void processarOperacaoExclusao(Scanner scanner) throws IOException {
         exibirSubmenu();
         int metodoBusca = lerOpcao(scanner);
@@ -168,6 +214,12 @@ public class Main {
         }
     }
 
+    /**
+     * Processa a ordenação externa dos filmes por ID e atualiza os índices.
+     * 
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     * @throws InterruptedException Se a execução for interrompida
+     */
     private static void processarOrdenacaoPorID() throws IOException, InterruptedException {
 
         limparIndices(); // Limpar os índices
@@ -180,6 +232,12 @@ public class Main {
         CSVHandler.atualizarIndices(); // Atualiza os índices a partir do arquivo binário ordenado
     }
 
+    /**
+     * Processa a ordenação externa dos filmes por data de lançamento e atualiza os índices.
+     * 
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     * @throws InterruptedException Se a execução for interrompida
+     */
     private static void processarOrdenacaoPorData() throws IOException, InterruptedException {
 
         limparIndices(); // Limpar os índices
@@ -240,7 +298,7 @@ public class Main {
     }
 
     /**
-     * Busca filmes por pais usando a lista invertida.
+     * Busca filmes por país usando a lista invertida.
      * Retorna a interseção dos resultados para cada termo pesquisado.
      * 
      * @param scanner Scanner para entrada do usuário
@@ -353,12 +411,27 @@ public class Main {
         }
     }
 
+    /**
+     * Processa a descompressão de uma versão específica do arquivo de dados e atualiza os índices.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     */
     private static void processarDescompressao(Scanner scanner) throws IOException{
         System.out.print("\nVersao: ");
         int versao = lerOpcao(scanner);
+        limparIndices();
         ControllerCompressao.descomprimir(versao);
+        inicializarIndices();
+        CSVHandler.atualizarIndices();
     }
 
+    /**
+     * Processa busca de padrão no arquivo usando algoritmo KMP.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de leitura no arquivo
+     */
     private static void processarBuscaKMP(Scanner scanner) throws IOException {
         System.out.print("\nDigite o padrao: ");
         String padraoTexto = scanner.nextLine();
@@ -370,6 +443,12 @@ public class Main {
         }
     }
 
+    /**
+     * Processa busca de padrão no arquivo usando algoritmo Boyer-Moore.
+     * 
+     * @param scanner Objeto Scanner para interação com o usuário
+     * @throws IOException Se ocorrer erro de leitura no arquivo
+     */
     private static void processarBuscaBM(Scanner scanner) throws IOException {
         System.out.print("\nDigite o padrao: ");
         String padraoTexto = scanner.nextLine();
@@ -381,6 +460,9 @@ public class Main {
         }
     }
   
+    /**
+     * Inicializa todos os índices usados pelo sistema (árvore B+, hash e listas invertidas).
+     */
     private static void inicializarIndices(){
 
         // Inicializa a árvore B+ (índice direto)
@@ -420,6 +502,9 @@ public class Main {
         CSVHandler.setListaInvertidaPais(listaPais); 
     }
 
+    /**
+     * Limpa todos os índices do sistema, apagando seus arquivos.
+     */
     private static void limparIndices(){
 
         // Limpar a árvore B+ (índice direto)
@@ -456,5 +541,4 @@ public class Main {
         }
     }
 
-    
 }
