@@ -9,10 +9,11 @@ O Trabalho Prático de AEDS III tem como objetivo desenvolver um sistema de gere
 
 ## Introdução
 
-* Paula de Nogueira Castro Carvalho
-* Sofia Grossi Vieira Santos
 
 ## Desenvolvimento
 
 
 ## Conclusão
+
+
+Projeto desenvolvido por Paula de Nogueira Castro Carvalho e Sofia Grossi Vieira Santos.
