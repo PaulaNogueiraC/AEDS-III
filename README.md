@@ -6,11 +6,27 @@ O Trabalho Prático de AEDS III tem como objetivo desenvolver um sistema de gere
 * TP03: Compactação com Huffman e LZW, Casamento de Padrões com KMP e Boyer-Moore
 * TP04: Criptografia
 
+---
 
 ## Introdução
 
 Com foco na aplicação prática dos temas abordados em sala, este projeto foi estruturado em quatro etapas que integram diferentes técnicas de manipulação e proteção de dados. A proposta envolveu desde a leitura e escrita em arquivos até a incorporação de métodos de compressão e criptografia, oferecendo uma abordagem gradual e aprofundada do conteúdo. As funcionalidades foram desenvolvidas a partir de um conjunto de dados reais sobre filmes, retirado da plataforma **Kaggle**, com o arquivo intitulado `"imdb_movies.csv"`, que proporcionou um cenário concreto para testes e validações.
 
+Cada registro do CSV contém os seguintes campos:
+- **Id**: `inteiro` — identificador único do filme
+- **Name**: `String` de tamanho variável — nome do filme
+- **ReleaseDate**: `Date` — data de lançamento
+- **Score**: `float` — nota ou avaliação do filme
+- **Genres**: `List` de String — gêneros do filme (lista de valores com separador)
+- **Overview**: `String` de tamanho variável — resumo ou descrição do filme
+- **OriginalTitle**: `String` de tamanho variável — título original do filme
+- **OriginalLanguage**: `List` de String — idiomas originais (lista de valores com separador)
+- **Budget**: `float` — orçamento da produção
+- **Country**: `String` de tamanho fixo (máximo de 2 caracteres) — país de origem (sigla)
+
+Esses dados foram empregados em todas as fases do projeto, fundamentando a geração de arquivos sequenciais, o desenvolvimento de índices, a compressão dos dados e a implementação de técnicas de criptografia.
+
+---
 
 ## Desenvolvimento
 
