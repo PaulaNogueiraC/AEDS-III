@@ -67,7 +67,7 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
   - Ideal para buscas por palavras ou atributos textuais (como título e país).
   - Permite localizar rapidamente os registros que contêm determinada palavra.
   - Boa para sistemas de busca e filtros.
-  - Permite interseção de buscas (ex: filmes com "Brasil" e "Aventura").
+  - Permite interseção de buscas.
   - Muito usada em mecanismos de busca e bancos de dados.
 
 * **Atualizações nos Índices**
