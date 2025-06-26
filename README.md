@@ -18,13 +18,25 @@ Com foco na aplicação prática dos temas abordados em sala, este projeto foi e
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=4Lobo-pyeD4">
-		<img src="https://img.youtube.com/vi/4Lobo-pyeD4/maxresdefault.jpg" width="500">
+		<img src="https://img.youtube.com/vi/4Lobo-pyeD4/maxresdefault.jpg" width="500" alt="TP01 Turbo - AEDS III">
 	</a>
 </p>
 
 ### TP2: Arquivos Indexados
 
+<p align="center">
+	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
+		<img src="https://img.youtube.com/vi/1l6Xo9sHFAA/maxresdefault.jpg" width="500" alt="TP02 Turbo - AEDS III">
+	</a>
+</p>
+
 ### TP3: Compressão e Casamento de Padrão
+
+<p align="center">
+	<a href="https://www.youtube.com/watch?v=Ty6YWTAzd10">
+		<img src="https://img.youtube.com/vi/Ty6YWTAzd10/maxresdefault.jpg" width="500" alt="TP03 Turbo - AEDS III">
+	</a>
+</p>
 
 ### TP4: Criptografia
 
