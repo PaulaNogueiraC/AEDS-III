@@ -40,6 +40,43 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 ### TP2: Arquivos Indexados
 
+#### Objetivo do Trabalho
+Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
+
+* Atributos Utilizados
+- ID → Utilizado para indexação com:
+  - Árvore B+
+  - Hash Extensível
+- Título e País → Utilizados na:
+  - Lista Invertida
+
+* Por que usamos Árvore B+?
+- Ideal para grandes volumes de dados armazenados em disco.
+- Otimiza buscas por intervalos ordenados (por exemplo, todos os filmes com ID entre X e Y).
+- Reduz o número de leituras/escritas no disco.
+- Boa para leitura sequencial e ordenada de registros.
+
+* Por que usamos Hash Extensível?
+- Estrutura que cresce dinamicamente, evitando reorganizações caras.
+- Cada registro é armazenado em um bucket.
+- Resolve colisões eficientemente dividindo apenas os buckets cheios.
+- Muito rápido para acesso direto pelo ID.
+- Poucas leituras em disco são necessárias.
+
+* Por que usamos Lista Invertida?
+- Ideal para buscas por palavras ou atributos textuais (como título e país).
+- Permite localizar rapidamente os registros que contêm determinada palavra.
+- Boa para sistemas de busca e filtros.
+- Permite interseção de buscas (ex: filmes com "Brasil" e "Aventura").
+- Muito usada em mecanismos de busca e bancos de dados.
+
+* Atualizações nos Índices
+- Inserção: Atualiza todos os índices (B+, Hash, Lista).
+- Alteração e Deleção: Requer busca pelo ID (em qualquer índice) e depois atualização dos três índices.
+- Leitura:
+  - Pelo ID: via B+, Hash ou busca sequencial.
+  - Pelo título/país: via Lista Invertida.
+
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
 		<img src="https://img.youtube.com/vi/1l6Xo9sHFAA/maxresdefault.jpg" width="500" alt="TP02 Turbo - AEDS III">
@@ -56,6 +93,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 ### TP4: Criptografia
 
+--- 
 
 ## Conclusão
 
