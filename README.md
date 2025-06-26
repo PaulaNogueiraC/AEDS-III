@@ -16,6 +16,12 @@ Com foco na aplicação prática dos temas abordados em sala, este projeto foi e
 
 ### TP1: Arquivo Sequencial e Ordenação Externa
 
+<p align="center">
+	<a href="https://www.youtube.com/watch?v=4Lobo-pyeD4">
+		<img src="https://img.youtube.com/vi/4Lobo-pyeD4/maxresdefault.jpg" width="500">
+	</a>
+</p>
+
 ### TP2: Arquivos Indexados
 
 ### TP3: Compressão e Casamento de Padrão
