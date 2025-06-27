@@ -40,15 +40,15 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 ### TP2: Arquivos Indexados
 
-#### Objetivo do Trabalho
+#### Objetivo do Trabalho:
 Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
 
-* **Atributos Utilizados**
-- ID → Utilizado para indexação com:
-  - Árvore B+
-  - Hash Extensível
-- Título e País → Utilizados na:
-  - Lista Invertida
+* **Atributos Utilizados:**
+  - ID → Utilizado para indexação com:
+    - Árvore B+
+    - Hash Extensível
+  - Título e País → Utilizados na:
+    - Lista Invertida
 
 * **Por que usamos essas estruturas?**
   - Árvore B+: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
