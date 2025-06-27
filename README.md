@@ -31,21 +31,21 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ## Desenvolvimento
 
 ### TP01: Arquivo Sequencial e Ordenação Externa
-- Divisão do TP em três pastas:
-  - class;
-  - dataset: base de dados + arquivo binário;
-  - src.
+- **Divisão do TP em três pastas:**
+    - class;
+    - dataset: base de dados + arquivo binário;
+    - src.
  
 * **Implementamos um sistema completo de CRUD sequencial em arquivo binário.**
 
 * **O sistema inclui:**
-- Importação de dados a partir do arquivo CSV.
-- Operações de criar, ler, atualizar (com tratamento para variação de tamanho) e deletar registros via marcação de lápide.
-- Interface de menu no terminal para navegação.
+  - Importação de dados a partir do arquivo CSV.
+  - Operações de criar, ler, atualizar (com tratamento para variação de tamanho) e deletar registros via marcação de lápide.
+  - Interface de menu no terminal para navegação.
 
 * **Implementamos ordenação externa:**
-- Pelo ID.
-- Por Data de Lançamento.
+  - Pelo ID.
+  - Por Data de Lançamento.
 
 * Após a ordenação, o novo arquivo elimina espaços de registros excluídos ou atualizados, e passa a ser utilizado nas próximas operações de CRUD.
 
