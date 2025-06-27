@@ -58,7 +58,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ### TP02: Arquivos Indexados
 
 #### Objetivo:
-Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
+- Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
 
 * **Atributos Utilizados:**
   - ID → Utilizado para indexação com:
