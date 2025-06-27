@@ -107,7 +107,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ### TP04: Criptografia
 
 #### Objetivo:
-- Aplicamos criptografia no campo **overview** do banco de dados, garantindo que esse dado fosse armazenado de forma segura no arquivo de dados. A criptografia foi utilizada como mecanismo para assegurar confidencialidade e integridade das informações sensíveis.
+- Aplicamos criptografia no campo **overview**, garantindo que esse dado fosse armazenado de forma segura no arquivo de dados. A criptografia foi utilizada como mecanismo para assegurar confidencialidade e integridade das informações sensíveis.
 
 #### Métodos de Criptografia:
 - **Algoritmo RSA (Rivest-Shamir-Adleman):** uma técnica de criptografia assimétrica, em que utilizamos um par de chaves (pública e privada) para cifrar e decifrar o conteúdo. O RSA é conhecido por sua segurança baseada na dificuldade de fatorar números primos grandes.
