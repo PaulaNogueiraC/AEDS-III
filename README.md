@@ -105,7 +105,8 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 
 ### TP04: Criptografia
-
+- **Algoritmo RSA (Rivest-Shamir-Adleman)**
+- **Criptografia por Transposição de Colunas**
 --- 
 
 ## Conclusão
