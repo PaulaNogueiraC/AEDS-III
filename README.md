@@ -50,32 +50,10 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
 - Título e País → Utilizados na:
   - Lista Invertida
 
-* **Por que usamos Árvore B+?**
-  - Ideal para grandes volumes de dados armazenados em disco.
-  - Otimiza buscas por intervalos ordenados (por exemplo, todos os filmes com ID entre X e Y).
-  - Reduz o número de leituras/escritas no disco.
-  - Boa para leitura sequencial e ordenada de registros.
-
-* **Por que usamos Hash Extensível?**
-  - Estrutura que cresce dinamicamente, evitando reorganizações caras.
-  - Cada registro é armazenado em um bucket.
-  - Resolve colisões eficientemente dividindo apenas os buckets cheios.
-  - Muito rápido para acesso direto pelo ID.
-  - Poucas leituras em disco são necessárias.
-
-* **Por que usamos Lista Invertida?**
-  - Ideal para buscas por palavras ou atributos textuais (como título e país).
-  - Permite localizar rapidamente os registros que contêm determinada palavra.
-  - Boa para sistemas de busca e filtros.
-  - Permite interseção de buscas.
-  - Muito usada em mecanismos de busca e bancos de dados.
-
-* **Atualizações nos Índices**
-  - Inserção: Atualiza todos os índices (B+, Hash, Lista).
-  - Alteração e Deleção: Requer busca pelo ID (em qualquer índice) e depois atualização dos três índices.
-  - Leitura:
-    - Pelo ID: via B+, Hash ou busca sequencial.
-    - Pelo título/país: via Lista Invertida.
+* **Por que usamos essas estruturas?**
+- Árvore B+: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
+- Hash Extensível: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
+- Lista Invertida: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
