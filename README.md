@@ -51,9 +51,9 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
   - Lista Invertida
 
 * **Por que usamos essas estruturas?**
-- Árvore B+: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
-- Hash Extensível: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
-- Lista Invertida: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
+  - Árvore B+: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
+  - Hash Extensível: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
+  - Lista Invertida: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
