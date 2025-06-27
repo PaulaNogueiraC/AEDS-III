@@ -30,7 +30,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 ## Desenvolvimento
 
-### TP1: Arquivo Sequencial e Ordenação Externa
+### TP01: Arquivo Sequencial e Ordenação Externa
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=4Lobo-pyeD4">
@@ -38,7 +38,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 	</a>
 </p>
 
-### TP2: Arquivos Indexados
+### TP02: Arquivos Indexados
 
 #### Objetivo:
 Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
@@ -62,7 +62,7 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
 </p>
 
 
-### TP3: Compressão e Casamento de Padrão
+### TP03: Compressão e Casamento de Padrão
 
 #### Objetivo da Compressão:
 - Reduzir o tamanho dos arquivos para:
@@ -87,7 +87,7 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
 </p>
 
 
-### TP4: Criptografia
+### TP04: Criptografia
 
 --- 
 
