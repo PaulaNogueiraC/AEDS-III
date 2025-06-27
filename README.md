@@ -40,7 +40,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 ### TP2: Arquivos Indexados
 
-#### Objetivo do Trabalho:
+#### Objetivo:
 Construir estruturas de indexação para melhorar o desempenho de acesso, consulta e manipulação de registros de filmes em arquivo.
 
 * **Atributos Utilizados:**
@@ -51,9 +51,9 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
     - Lista Invertida
 
 * **Por que usamos essas estruturas?**
-  - Árvore B+: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
-  - Hash Extensível: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
-  - Lista Invertida: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
+  - **Árvore B+**: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
+  - **Hash Extensível**: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
+  - **Lista Invertida**: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
@@ -61,13 +61,31 @@ Construir estruturas de indexação para melhorar o desempenho de acesso, consul
 	</a>
 </p>
 
+
 ### TP3: Compressão e Casamento de Padrão
 
+#### Objetivo da Compressão:
+- Reduzir o tamanho dos arquivos para:
+  - Economizar espaço em disco
+  - Agilizar envio e recebimento de dados
+
+#### Métodos de Compressão:
+- **Huffman**: Usa frequência dos símbolos para gerar códigos binários menores para os mais comuns. Compressão sem perdas, eficiente com dados repetitivos.
+- **LZW**: Cria e expande um dicionário de padrões durante a leitura. Substitui padrões por códigos. É adaptável e eficiente para dados com repetições.
+
+#### Objetivo do Casamento de Padrão:
+- Localizar sequências específicas (padrões) dentro de textos, arquivos ou dados em geral.
+  
+#### Métodos de Casamento de Padrões:
+- **KMP**: Usa uma tabela de prefixos para evitar comparações repetidas. É eficiente em padrões com repetições.
+- **Boyer-Moore**: Aplica heurísticas para pular trechos do texto, sendo muito rápido em buscas em textos grandes.
+  
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=Ty6YWTAzd10">
 		<img src="https://img.youtube.com/vi/Ty6YWTAzd10/maxresdefault.jpg" width="500" alt="TP03 Turbo - AEDS III">
 	</a>
 </p>
+
 
 ### TP4: Criptografia
 
