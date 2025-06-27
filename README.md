@@ -118,4 +118,6 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 
 Ao longo do desenvolvimento do projeto, foi possível consolidar conhecimentos fundamentais relacionados à organização e manipulação de dados. As etapas progressivas proporcionaram uma experiência prática abrangente, abordando desde o armazenamento e recuperação de informações até técnicas mais avançadas, como compressão e criptografia, resultando em uma visão integrada e aplicada dos principais desafios no tratamento de dados.
 
+---
+
 > Projeto desenvolvido por Paula de Nogueira Castro Carvalho e Sofia Grossi Vieira Santos.
