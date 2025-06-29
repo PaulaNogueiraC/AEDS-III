@@ -1,3 +1,5 @@
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.ParseException;

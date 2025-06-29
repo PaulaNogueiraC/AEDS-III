@@ -5,14 +5,37 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
+/**
+ * Implementação do algoritmo RSA para criptografia assimétrica.
+ * 
+ * O RSA é um dos primeiros sistemas de criptografia de chave pública e amplamente utilizado
+ * para comunicação segura. Seus principais benefícios incluem:
+ * - Segurança baseada na dificuldade de fatoração de números grandes
+ * - Permite criptografia e assinatura digital
+ * - Funciona com pares de chaves (pública/privada)
+ * - Suporte a operações com blocos de dados grandes
+ *
+ * Esta implementação usa:
+ * - Tamanho de chave de 1024 bits (padrão industrial básico)
+ * - Preenchimento simples sem padding schemes específicos
+ * - Exponenciação modular eficiente
+ */
 public class RSA {
     
-    private final BigInteger n;
-    private BigInteger d;
-    private final BigInteger e;
+    private final BigInteger n; // módulo (p*q)
+    private BigInteger d;       // chave privada
+    private final BigInteger e;  // chave pública
     private final int tamBits = 1024;
-    private final int TAM_BLOCO = 117;
+    private final int TAM_BLOCO = 117; // tamanho do bloco para RSA-1024
 
+    /**
+     * Construtor que gera um novo par de chaves RSA.
+     * Executa os passos do algoritmo RSA:
+     * 1. Gera dois números primos grandes (p e q)
+     * 2. Calcula n = p*q e z = (p-1)*(q-1)
+     * 3. Escolhe d coprimo com z
+     * 4. Calcula e como inverso modular de d mod z
+     */
     public RSA() {
         SecureRandom aleatorio = new SecureRandom();
         
@@ -33,6 +56,15 @@ public class RSA {
         e = d.modInverse(z);
     }
 
+    /**
+     * Realiza exponenciação modular eficiente (base^expoente mod modulo).
+     * Implementa o método de exponenciação por quadrados.
+     * 
+     * @param base Número a ser elevado
+     * @param expoente Potência a elevar
+     * @param modulo Módulo para operação
+     * @return Resultado da exponenciação modular
+     */
     private BigInteger exponenciacaoModular(BigInteger base, BigInteger expoente, BigInteger modulo) {
         BigInteger resultado = BigInteger.ONE;
         BigInteger b = base.mod(modulo); // Garante que base < modulo
@@ -48,6 +80,14 @@ public class RSA {
         return resultado;
     }
 
+    /**
+     * Criptografa dados usando a chave pública RSA.
+     * Se os dados forem maiores que o tamanho máximo do bloco (117 bytes),
+     * automaticamente divide em blocos para criptografia.
+     * 
+     * @param dados Dados a serem criptografados
+     * @return Dados criptografados
+     */
     public byte[] criptografar(byte[] dados) {
         if (dados.length > TAM_BLOCO) {
             return criptografarEmBlocos(dados);
@@ -57,6 +97,12 @@ public class RSA {
         return C.toByteArray();
     }
 
+    /**
+     * Método interno para criptografar dados em blocos.
+     * 
+     * @param dados Dados a serem criptografados
+     * @return Dados criptografados em blocos
+     */
     private byte[] criptografarEmBlocos(byte[] dados) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         int tamBlocoCriptografado = getTamanhoBlocoCriptografado(); // 128 para RSA-1024
@@ -76,6 +122,14 @@ public class RSA {
         return output.toByteArray();
     }
 
+    /**
+     * Descriptografa dados usando a chave privada RSA.
+     * Se os dados criptografados forem grandes, automaticamente
+     * processa em blocos.
+     * 
+     * @param dadosCriptografados Dados a serem descriptografados
+     * @return Dados originais descriptografados
+     */
     public byte[] descriptografar(byte[] dadosCriptografados) {
         if (dadosCriptografados.length > getTamanhoBlocoCriptografado()) {
             return descriptografarEmBlocos(dadosCriptografados);
@@ -85,6 +139,12 @@ public class RSA {
         return P.toByteArray();
     }
 
+    /**
+     * Método interno para descriptografar dados em blocos.
+     * 
+     * @param dados Dados criptografados em blocos
+     * @return Dados originais reconstruídos
+     */
     private byte[] descriptografarEmBlocos(byte[] dados) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         int tamBlocoCriptografado = getTamanhoBlocoCriptografado();
@@ -100,6 +160,12 @@ public class RSA {
         return output.toByteArray();
     }
 
+    /**
+     * Calcula o tamanho do bloco criptografado em bytes.
+     * Para RSA-1024, retorna 128 bytes.
+     * 
+     * @return Tamanho em bytes do bloco criptografado
+     */
     private int getTamanhoBlocoCriptografado() {
         return (n.bitLength() + 7) / 8;  
     }

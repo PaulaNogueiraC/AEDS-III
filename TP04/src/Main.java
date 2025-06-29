@@ -1,5 +1,8 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,17 +70,8 @@ public class Main {
         try (Scanner scanner = new Scanner(System.in)) {
             int opcao;
 
-            do { 
-                // Exibe o menu de criptografia
-                System.out.println("\nO campo 'overview' (resumo) dos filmes estara sempre criptografado no arquivo de dados, porem sera mostrado descriptografado quando uma pesquisa for solicitada pelo usuário ou quando o mesmo for utilizado. Escolha o algoritmo de criptografia que sera utilizado para criptografa-lo andes de carregar a base de dados do CSV:");
-                System.out.println("1. Trasposicao de Colunas");
-                System.out.println("2. RSA");
-                opcao = lerOpcao(scanner);
-                switch(opcao){
-                    case 1 -> ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.TRANSPOSICAO);
-                    case 2 -> ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.RSA);
-                }
-            } while (opcao != 1 && opcao != 2);    
+            // Exibe o menu de criptografia
+            exibirMenuCriptografia(scanner);   
             
             do {
                 // Exibe o menu para o usuário escolher a ação
@@ -97,7 +91,8 @@ public class Main {
                 System.out.println("13. Buscar padrao com KMP");
                 System.out.println("14. Buscar padrao com Boyer-Moore");
                 System.out.println("15. Salvar no CSV");
-                System.out.println("16. Sair");
+                System.out.println("16. Trocar criptografia");
+                System.out.println("17. Sair");
                 System.out.print("Escolha uma opcao: ");
                 opcao = lerOpcao(scanner);
                 
@@ -118,10 +113,11 @@ public class Main {
                     case 13 -> processarBuscaKMP(scanner);
                     case 14 -> processarBuscaBM(scanner);
                     case 15 -> CSVHandler.salvarNoCSV(); // Salvar as informações do arquivo binário que foi alterado no CSV
-                    case 16 -> System.out.println("Saindo...");
+                    case 16 -> processarTrocaCriptografia();
+                    case 17 -> System.out.println("Saindo...");
                     default -> System.out.println("Opcao invalida!");
                 }
-            } while (opcao != 16);
+            } while (opcao != 17);
         } catch (InterruptedException ex) {
             System.out.println(ex.getMessage());
         } 
@@ -136,6 +132,28 @@ public class Main {
         System.out.println("2. Busca na Arvore B+");
         System.out.println("3. Busca na Tabela Hash");
         System.out.print("Escolha o metodo de busca: ");
+    }
+
+    /**
+     * Exibe o menu de opções de criptografia.
+     * 
+     * @param scanner Objeto Scanner para leitura da entrada
+     */
+    private static void exibirMenuCriptografia(Scanner scanner) {
+        int opcao;
+        do { 
+            // Exibe o menu de criptografia
+            System.out.println("\nO campo 'overview' (resumo) dos filmes estara sempre criptografado no arquivo de dados, porem sera mostrado descriptografado quando uma pesquisa for solicitada pelo usuário ou quando o mesmo for utilizado. Escolha o algoritmo de criptografia que sera utilizado para criptografa-lo andes de carregar a base de dados do CSV:");
+            System.out.println("1. Trasposicao de Colunas");
+            System.out.println("2. RSA");
+            System.out.println("O tipo atual é: " + ControllerCriptografia.getTipo());
+            System.out.print("Escolha uma opcao: ");
+            opcao = lerOpcao(scanner);
+            switch(opcao){
+                case 1 -> ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.TRANSPOSICAO);
+                case 2 -> ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.RSA);
+            }
+        } while (opcao != 1 && opcao != 2);
     }
 
     /**
@@ -516,6 +534,70 @@ public class Main {
         }
         CRUD.setListaInvertidaPais(listaPais);
         CSVHandler.setListaInvertidaPais(listaPais); 
+    }
+
+    /**
+     * Processa troca de criptografia, alternando entre Transposição de Colunas e RSA.
+     * Em seguida, recarrega os dados do CSV, criptografando-os com o novo algoritmo.
+     * Não limpa os arquivos, mas sobrescreve-os com os dados recarregados e criptografados.
+     *
+     * @throws IOException Se ocorrer erro de acesso aos arquivos
+     */
+    private static void processarTrocaCriptografia() throws IOException {
+        System.out.println("O tipo atual é: " + ControllerCriptografia.getTipo());
+        System.out.println("Trocando o algoritmo de criptografia...");
+
+        // 1. Alterna o tipo de criptografia
+        switch (ControllerCriptografia.getTipo()) {
+            case RSA:
+                ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.TRANSPOSICAO);
+                break;
+            case TRANSPOSICAO:
+                ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.RSA);
+                break;
+            default:
+                // Caso algum tipo inesperado, defina um padrão ou trate o erro
+                System.err.println("Tipo de criptografia desconhecido. Definindo para TRANSPOSICAO.");
+                ControllerCriptografia.setTipo(ControllerCriptografia.Tipo.TRANSPOSICAO);
+                break;
+        }
+
+        System.out.println("Novo tipo de criptografia selecionado: " + ControllerCriptografia.getTipo());
+
+        // 2. Limpa os índices e o arquivo de dados para garantir que a recarga seja limpa
+        // Isso é importante porque CSVHandler.carregarDoCSV() adiciona filmes,
+        // então precisamos de um estado inicial limpo para não duplicar.
+        limparArquivoDados(); // Limpa o arquivo de dados principal
+        limparIndices();      // Limpa todos os arquivos de índice
+
+        // 3. Re-inicializa os objetos de índice e o CRUD para o novo estado vazio
+        // Isso garante que as instâncias dos índices e o lastId do CRUD estejam prontos para receber novos dados
+        inicializarIndices();
+        CRUD.inicializar(); // Reseta o lastId para 0 e prepara o ARQ
+
+        // 4. Recarrega os filmes do CSV com o NOVO tipo de criptografia
+        // Isso irá preencher o arquivo de dados e os índices novamente,
+        // mas agora com o campo 'overview' criptografado usando o algoritmo recém-definido.
+        CSVHandler.carregarDoCSV();
+
+        System.out.println("Dados recarregados com sucesso usando o novo algoritmo de criptografia.");
+    }
+
+    /**
+     * Limpa o arquivo de dados principal do sistema.
+     */
+    private static void limparArquivoDados() {
+        try {
+            File arquivo = new File(ARQ);
+            if (arquivo.exists()) {
+                Files.delete(Paths.get(ARQ));
+            }
+            try (RandomAccessFile novoArq = new RandomAccessFile(ARQ, "rw")) {
+            }
+            System.out.println("Arquivo de dados principal limpo: " + ARQ);
+        } catch (IOException e) {
+            System.err.println("Falha na limpeza do arquivo de dados principal: " + e.getMessage());
+        }
     }
 
     /**
