@@ -114,8 +114,8 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 - **Criptografia por Transposição de Colunas:** método de criptografia simétrica que reorganiza os caracteres da mensagem original com base em uma chave de ordenação. Apesar de simples, é eficaz como camada adicional de ofuscação.
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=Ty6YWTAzd10" target="_blank">
-    <img src="https://img.youtube.com/vi/Ty6YWTAzd10/maxresdefault.jpg" width="500" alt="TP04 Turbo - AEDS III">
+  <a href="https://www.youtube.com/watch?v=DIFv49LsOvQ" target="_blank">
+    <img src="https://img.youtube.com/vi/DIFv49LsOvQ/maxresdefault.jpg" width="500" alt="TP04 Turbo - AEDS III">
   </a>
 </p>
 
