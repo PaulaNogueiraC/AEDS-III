@@ -31,7 +31,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ## Desenvolvimento
 
 ### TP01: Arquivo Sequencial e Ordenação Externa
-* **Estrutura do Arquivo:**
+**Estrutura do Arquivo:**
 - O arquivo sequencial é gerado a partir de uma base de dados em formato CSV.
 - Os 4 primeiros bytes do arquivo armazenam o último e maior ID já utilizado, facilitando o controle e a geração de novos registros.
 - Cada registro é composto por:
