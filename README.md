@@ -31,16 +31,20 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ## Desenvolvimento
 
 ### TP01: Arquivo Sequencial e Ordenação Externa
-- **Divisão do TP em três pastas:**
-    - class;
-    - dataset: base de dados + arquivo binário;
-    - src.
+* **Estrutura do Arquivo:**
+- O arquivo sequencial é gerado a partir de uma base de dados em formato CSV.
+- Os 4 primeiros bytes do arquivo armazenam o último e maior ID já utilizado, facilitando o controle e a geração de novos registros.
+- Cada registro é composto por:
+  - **Lápide**: indica se o registro está válido ou logicamente excluído;
+  - **Indicador de tamanho**: informa o tamanho total do vetor de bytes do registro;
+  - **Vetor de bytes**: contém o registro em vetor de bytes do objeto, ou seja, seus dados serializados.
  
 * **Implementamos um sistema completo de CRUD sequencial em arquivo binário.**
 
 * **O sistema inclui:**
   - Importação de dados a partir do arquivo CSV.
   - Operações de criar, ler, atualizar (com tratamento para variação de tamanho) e deletar registros via marcação de lápide.
+  - Opção de voltar com os dados do arquivo binário para o CSV.
   - Interface de menu no terminal para navegação.
 
 * **Implementamos ordenação externa:**
@@ -48,6 +52,8 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
   - Por Data de Lançamento.
 
 * Após a ordenação, o novo arquivo elimina espaços de registros excluídos ou atualizados, e passa a ser utilizado nas próximas operações de CRUD.
+
+Vídeo com mais detalhes de implementação e testes realizados do TP01:
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=4Lobo-pyeD4">
@@ -71,6 +77,8 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
   - **Árvore B+**: Ideal para grandes volumes de dados, otimiza buscas ordenadas e sequenciais, e reduz acessos ao disco.
   - **Hash Extensível**: Cresce dinamicamente, facilita acesso direto por ID com poucas leituras em disco.
   - **Lista Invertida**: Excelente para buscas por palavras ou atributos textuais, permite interseções e é usada em sistemas de busca.
+
+Vídeo com mais detalhes de implementação e testes realizados do TP02:
 
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=1l6Xo9sHFAA">
@@ -96,6 +104,8 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 #### Métodos de Casamento de Padrões:
 - **KMP**: Usa uma tabela de prefixos para evitar comparações repetidas. É eficiente em padrões com repetições.
 - **Boyer-Moore**: Aplica heurísticas para pular trechos do texto, sendo muito rápido em buscas em textos grandes.
+
+Vídeo com mais detalhes de implementação e testes realizados do TP03:
   
 <p align="center">
 	<a href="https://www.youtube.com/watch?v=Ty6YWTAzd10">
@@ -107,11 +117,12 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera�
 ### TP04: Criptografia
 
 #### Objetivo:
-- Aplicamos criptografia no campo **overview**, garantindo que esse dado fosse armazenado de forma segura no arquivo de dados. A criptografia foi utilizada como mecanismo para assegurar confidencialidade e integridade das informações sensíveis.
-
+- Aplicamos criptografia no campo **overview**, garantindo que esse dado fosse armazenado de forma segura no arquivo de dados. A criptografia foi utilizada como mecanismo para assegurar confidencialidade e integridade das informações sensíveis. Esse campo já é salvo criptografado no arquivo de dados e permanece sempre assim no mesmo, porém é mostrado descriptografado quando uma pesquisa é solicitada pelo usuário ou quando o mesmo é utilizado.
 #### Métodos de Criptografia:
-- **Algoritmo RSA (Rivest-Shamir-Adleman):** uma técnica de criptografia assimétrica, em que utilizamos um par de chaves (pública e privada) para cifrar e decifrar o conteúdo. O RSA é conhecido por sua segurança baseada na dificuldade de fatorar números primos grandes.
-- **Criptografia por Transposição de Colunas:** método de criptografia simétrica que reorganiza os caracteres da mensagem original com base em uma chave de ordenação. Apesar de simples, é eficaz como camada adicional de ofuscação.
+- **Algoritmo RSA (Rivest-Shamir-Adleman):** uma técnica de criptografia assimétrica, em que utilizamos um par de chaves (pública e privada) para cifrar e decifrar o conteúdo. Escolhemos o RSA pois ele é conhecido por sua segurança baseada na dificuldade de fatorar números primos grandes e por seu suporte a operações com blocos de dados grandes.
+- **Criptografia por Transposição de Colunas:** método de criptografia simétrica que reorganiza os caracteres da mensagem original com base em uma chave de ordenação. Escolhemos a Transposição de Colunas por sua simplicidade de implementação combinada com a independência que proporciona no ciframento de blocos.
+
+Vídeo com mais detalhes de implementação e testes realizados do TP04:
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=DIFv49LsOvQ" target="_blank">
