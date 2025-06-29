@@ -115,7 +115,7 @@ Esses dados foram empregados em todas as fases do projeto, fundamentando a gera√
 
 <p align="center">
   <a href="https://www.youtube.com/watch?v=DIFv49LsOvQ" target="_blank">
-    <img src="https://img.youtube.com/vi/DIFv49LsOvQ/maxresdefault.jpg" width="500" alt="TP04 Turbo - AEDS III">
+    <img src="https://img.youtube.com/vi/DIFv49LsOvQ/maxresdefault.jpg" width="500" alt="TP04 - AEDS III">
   </a>
 </p>
 
